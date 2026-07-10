@@ -1,0 +1,17 @@
+# Ignore the API usage JSON file
+skills/system/mysys.md
+tools/subsec/voice/server.pem
+.auto-f
+ai-history
+tools/agentic/fusion/logs
+index-map-local-ai.txt
+.openrouter_cache_v2.json
+.active_cd*
+.request_log
+.agent
+.env
+
+# Ignore Python cache directories and bytecode
+__pycache__/
+*.pyc
+.spend_ledger.json
