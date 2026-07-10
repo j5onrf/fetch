@@ -1,8 +1,8 @@
 <p align="center">
-  <img alt="Local-AI Agent" src="https://github.com/j5onrf/local-ai/blob/main/logo.svg" width="250" />
+  <img alt="Local-AI Agent" src="https://github.com/j5onrf/fetch/blob/main/logo.svg" width="250" />
 </p>
 
-<h1 align="center">Local-AI Agent <kbd>v0.9.1.1-beta</kbd></h1>
+<h1 align="center">Fetch <kbd>v0.9.1.1-beta</kbd></h1>
 
 <p align="center">
   <img src="https://img.shields.io/github/last-commit/j5onrf/local-ai?style=for-the-badge&labelColor=1f1f1f&color=8dbdff" alt="Last Commit">
@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <code>gpt</code> &nbsp; <code>claude</code> &nbsp; <code>grok</code> &nbsp; <code>gemini</code> &nbsp; <code>openrouter</code> &nbsp; <code>gguf</code>
+  <code>agentic-tool-calls</code> &nbsp; <code>node: Q_79</code> &nbsp; <code>core: axon</code>
 </p>
 
 ---
