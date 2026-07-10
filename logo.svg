@@ -19,8 +19,14 @@
     <rect x="40" y="20" width="140" height="160" rx="12" fill="none" stroke="url(#metalGrad)" stroke-width="7" />
     <rect x="60" y="2" width="100" height="196" rx="12" fill="none" stroke="url(#metalGrad)" stroke-width="7" />
 
-    <!-- CLI Terminal Eyes -->
-    <path d="M 76 72 L 92 82 L 76 92" fill="none" stroke="url(#cyanGlow)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
-    <line x1="121" y1="92" x2="141" y2="92" stroke="url(#cyanGlow)" stroke-width="6" stroke-linecap="round" />
+    <!-- CLI Terminal Face (> _ <) -->
+    <!-- Left Eye: Chevron Prompt -->
+    <path d="M 68 72 L 84 82 L 68 92" fill="none" stroke="url(#cyanGlow)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+    
+    <!-- Nose/Mouth: Terminal Underscore -->
+    <line x1="100" y1="92" x2="120" y2="92" stroke="url(#cyanGlow)" stroke-width="6" stroke-linecap="round" />
+    
+    <!-- Right Eye: Mirrored Chevron -->
+    <path d="M 152 72 L 136 82 L 152 92" fill="none" stroke="url(#cyanGlow)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
   </g>
 </svg>
