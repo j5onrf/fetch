@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Fetch Agent Hook v0.8.9.12
+# Fetch Hook v0.8.9.12
 
 [[ $- != *i* ]] && return
 

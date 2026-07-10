@@ -1,4 +1,4 @@
-# Fetch Agent Blueprint
+# Fetch Blueprint
 
 > **Syntax**: `[command / execution] ──> [intent1], [intent2], [intent3]`  
 > **Delimiter**: `" ──> "` (Three-dash arrow with a trailing space)
@@ -102,8 +102,6 @@ ai init ~/.config/fetch/projects/session-test-2 --init ---> session test 2, proj
 
 ```properties
 # [TOOL] cat ~/.config/fetch/skills/identity/business/mybiz.md --leaf ---> mybiz, show business profile, view mybiz
-# [TOOL] cat ~/.config/fetch/skills/identity/marketing/strategy.md --leaf ---> marketing strategy, growth strategy, view marketing
-# [TOOL] cat ~/.config/fetch/skills/identity/workout/routine.md --leaf ---> routine, fitness profile, workout routine
 ```
 
 ## 4. Static Aliases & Shell Shortcuts
@@ -117,9 +115,6 @@ ai init ~/.config/fetch/projects/session-test-2 --init ---> session test 2, proj
 
 # --- Index-Map (Graph-Enabled Code Intelligence Engine) ---
 [TOOL] ~/.config/fetch/tools/map/index-map --cat ---> index map, im
-
-# --- Server Lifecycle Management ---
-# ~/.config/fetch/tools/tools/subsec/server/kill-ai-servers ---> killserver, ks
 ```
 
 ## 5. TUI (Terminal User Interface) Programs
@@ -175,9 +170,7 @@ nohup uwsm app -- brave-origin --user-data-dir="~/.config/BraveSoftware/brave-sp
 
 # --- State & Workflow Management ---
 ~/.config/fetch/tools/subsec/hyprstate/work ---> hyprstate work, work, hs, hyprstate
-~/.config/fetch/tools/subsec/hyprstate/clean ---> hyprstate clean, clean, hs, hyprstate
 ~/.config/fetch/tools/subsec/hyprstate/gitcom ---> hyprstate gitcom, gitcom, gcom, hs, hyprstate
-~/.config/fetch/tools/subsec/hyprstate/media ---> hyprstate media, media, hs, hyprstate
 ```
 
 ## 8. Testing (Concepts & Prototypes)

@@ -9,7 +9,7 @@ Local agent workspaces, dynamic memories, save checkpoints, and codebase mapping
 ✔ Compiled index-map: ~/session-test/index-map-session-test.txt
 ✔ Created graph database: ~/session-test/index-map-memory-session-test.db
 ╭──────────────────────────────────────────────╮
-│  >_ Fetch Agent                           │
+│  >_ Fetch Agent                              │
 │                                              │
 │  model:     Qwen3.6-35B-A3B.gguf             │
 │  directory: ...i/projects/session-test       │

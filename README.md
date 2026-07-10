@@ -42,7 +42,7 @@ All configurations and custom shortcuts are managed in [`ai-context.md`](ai-cont
 
 ```console
 ╭──────────────────────────────────────────────╮
-│  >< Fetch Agent                              │
+│  >_ Fetch Agent                              │
 │                                              │
 │  model:     Qwen3.6-35B-A3B.gguf             │
 │  directory: ...-ai/projects/session-test     │
