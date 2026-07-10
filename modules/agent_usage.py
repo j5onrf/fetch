@@ -1,9 +1,9 @@
-# File: ~/.config/local-ai/modules/agent_usage.py
+# File: ~/.config/fetch/modules/agent_usage.py
 import os
 import json
 import time
 
-LEDGER_PATH = os.path.expanduser("~/.config/local-ai/.spend_ledger.json")
+LEDGER_PATH = os.path.expanduser("~/.config/fetch/.spend_ledger.json")
 
 # Current mid-2026 standard API pricing rates (per 1,000,000 tokens)
 PRICING_MAP = {

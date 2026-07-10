@@ -13,22 +13,22 @@ A zero-daemon, model-free voice-to-text pipeline that integrates any tablet (or 
 ## 1. Save and Configure the Script
 
 Save your voice-query Python script to:
-`$HOME/.config/local-ai/tools/subsec/voice/voice-query`
+`$HOME/.config/fetch/tools/subsec/voice/voice-query`
 
 Make the script executable:
 ```bash
-chmod +x $HOME/.config/local-ai/tools/subsec/voice/voice-query
+chmod +x $HOME/.config/fetch/tools/subsec/voice/voice-query
 ```
 
 ---
 
 ## 2. Register the Shortcut
 
-Add this line to Section 4 of your `~/.config/local-ai/ai-context.txt`:
+Add this line to Section 4 of your `~/.config/fetch/ai-context.txt`:
 
 ```text
 # --- Local-Ai Tablet Voice Bridge ---
-$HOME/.config/local-ai/tools/subsec/voice/voice-query ---> voice, voice query, voice bridge
+$HOME/.config/fetch/tools/subsec/voice/voice-query ---> voice, voice query, voice bridge
 ```
 
 ---

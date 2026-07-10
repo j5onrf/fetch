@@ -3,7 +3,7 @@
 # The Ultra-Lite "PixelBrowse" Tool Design
 
 # A clean, single-file Python script:
-~/.config/local-ai/tools/subsec/headless-chromium/pixel-browse
+~/.config/fetch/tools/subsec/headless-chromium/pixel-browse
 How It Works:
 The Command: You run pixel-browse <URL> "<Your Question>".
 Ingestion: It executes your native, headless system chromium to take a fast 1280x1600 screenshot of the page, saving it to /tmp.
@@ -18,7 +18,7 @@ Extremely Low Code Weight: It uses Python's standard library and pre-installed s
 
 ```text
 ~ ❯ pixel browse
-[01/01] ❯ [pixel browse] ~/.config/local-ai/tools/subsec/headless-chromium/pixel-browse | cat
+[01/01] ❯ [pixel browse] ~/.config/fetch/tools/subsec/headless-chromium/pixel-browse | cat
 :: ↵ run  Esc: 
 [Pixel] Enter target URL: https://github.com/j5onrf/local-ai
 [Pixel] Enter your question: what does the banner image say

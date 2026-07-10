@@ -46,8 +46,8 @@ Agent: Understood. I have noted your preferences:
 ```
 
 ## 1. Directory Structure
-*   `~/.config/local-ai/projects/database/*.db`: Isolated SQLite database managing history per workspace.
-*   `~/.config/local-ai/.spend_ledger.json`: Local-only daily token and API cost ledger (git-ignored).
+*   `~/.config/fetch/projects/database/*.db`: Isolated SQLite database managing history per workspace.
+*   `~/.config/fetch/.spend_ledger.json`: Local-only daily token and API cost ledger (git-ignored).
 *   `~/<workspace>/.agent/session.json`: Secure server-side tracking key for cloud APIs.
 *   `~/<workspace>/.agent/tpm.md`: Human-readable personal facts, editable by hand.
 *   `~/<workspace>/index-map-<project>.txt`: Codebase structural blueprint compiled.

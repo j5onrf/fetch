@@ -1,7 +1,7 @@
 # CODEBASE INDEX MAP (UNIVERSAL ARCHITECTURE REFERENCE)
 # Generated on      : 2026-07-02 16:08
 # Project Workspace : session-test-2
-# Target Directory  : ~/.config/local-ai/projects/session-test-2
+# Target Directory  : ~/.config/fetch/projects/session-test-2
 # -----------------------------------------------------------------------------------------
 # INSTRUCTIONS:
 # This flat-map represents the structural outline of the codebase. It lists file paths, 

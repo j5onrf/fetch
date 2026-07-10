@@ -1,7 +1,7 @@
 # CODEBASE INDEX MAP & STRUCTURAL KNOWLEDGE GRAPH
 # Generated on      : 2026-07-08 11:48
 # Project Workspace : modules
-# Target Directory  : ~/.config/local-ai/modules
+# Target Directory  : ~/.config/fetch/modules
 # -----------------------------------------------------------------------------------------
 # AI AGENT STRUCTURAL EXPLORATION INSTRUCTIONS:
 # This directory contains an active SQLite-backed semantic relationship map.
@@ -16,11 +16,11 @@
 #   architecture overview       - Compiles complete codebase statistics and files
 #
 # DIRECT EXECUTABLE PATHS:
-#   ~/.config/local-ai/tools/map/index-map trace <symbol>
-#   ~/.config/local-ai/tools/map/index-map blast-radius <symbol>
-#   ~/.config/local-ai/tools/map/index-map snippet <symbol>
-#   ~/.config/local-ai/tools/map/index-map search <pattern>
-#   ~/.config/local-ai/tools/map/index-map architecture
+#   ~/.config/fetch/tools/map/index-map trace <symbol>
+#   ~/.config/fetch/tools/map/index-map blast-radius <symbol>
+#   ~/.config/fetch/tools/map/index-map snippet <symbol>
+#   ~/.config/fetch/tools/map/index-map search <pattern>
+#   ~/.config/fetch/tools/map/index-map architecture
 # -----------------------------------------------------------------------------------------
 # Codebase Modules & Active Architecture:
 #   ├── Readme.md                - Spellchecker Privacy Disclosure
@@ -34,7 +34,7 @@
 #   ├── chat                     - chat - Unified Agentic Brainstorm, Thinking & Follow-up Engine v2.5.1
 #   ├── index-map-memory-modules.db
 #   ├── model-select.py          - model-select.py - Fully Dynamic TUI Model Selector driven by OpenRouter Rankings
-#   └── speed_test.py            - ~/.config/local-ai/modules/speed_test.py
+#   └── speed_test.py            - ~/.config/fetch/modules/speed_test.py
 # -----------------------------------------------------------------------------------------
 [md:Readme.md] title:Spellchecker Privacy Disclosure
 [py:agent_context.py] imp:fnmatch,os,re,shutil,sys | fn:tokenize,load_context_entries,jaccard_search,clean_tool_prefix

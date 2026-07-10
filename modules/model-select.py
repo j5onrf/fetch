@@ -11,8 +11,8 @@ import subprocess
 import select
 import requests
 
-ENV_PATH = os.path.expanduser("~/.config/local-ai/.env")
-CACHE_PATH = os.path.expanduser("~/.config/local-ai/.openrouter_cache_v2.json")
+ENV_PATH = os.path.expanduser("~/.config/fetch/.env")
+CACHE_PATH = os.path.expanduser("~/.config/fetch/.openrouter_cache_v2.json")
 
 # Fallback defaults used on cold-boots before first API refresh
 GEMINI_CURATED = [

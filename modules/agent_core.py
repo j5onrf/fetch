@@ -1,4 +1,4 @@
-# File: ~/.config/local-ai/modules/agent_core.py
+# File: ~/.config/fetch/modules/agent_core.py
 import os
 import sys
 import re

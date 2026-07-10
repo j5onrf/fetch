@@ -5,9 +5,9 @@
 <h1 align="center">Fetch <kbd>v0.9.1.1-beta</kbd></h1>
 
 <p align="center">
-  <img src="https://img.shields.io/github/last-commit/j5onrf/local-ai?style=for-the-badge&labelColor=1f1f1f&color=8dbdff" alt="Last Commit">
+  <img src="https://img.shields.io/github/last-commit/j5onrf/fetch?style=for-the-badge&labelColor=1f1f1f&color=8dbdff" alt="Last Commit">
   <img src="https://img.shields.io/badge/language-python-a3be8c?style=for-the-badge&labelColor=1f1f1f" alt="Language">
-  <img src="https://img.shields.io/github/repo-size/j5onrf/local-ai?style=for-the-badge&labelColor=1f1f1f&color=d6b4e0" alt="Repo Size">
+  <img src="https://img.shields.io/github/repo-size/j5onrf/fetch?style=for-the-badge&labelColor=1f1f1f&color=d6b4e0" alt="Repo Size">
 </p>
 
 <p align="center">
@@ -42,7 +42,7 @@ All configurations and custom shortcuts are managed in [`ai-context.md`](ai-cont
 
 ```console
 ╭──────────────────────────────────────────────╮
-│  >_ Local-AI Agent                           │
+│  >_ Fetch                                    │
 │                                              │
 │  model:     Qwen3.6-35B-A3B.gguf             │
 │  directory: ...-ai/projects/session-test     │
@@ -96,7 +96,7 @@ Agent: Workspace loaded. Awaiting instructions.
 | **Resiliency** | **Fallbacks** | `Gemini` → `OpenAI` → `Claude` → `xAI` → `OpenRouter` → `GGUF`. |
 | **Safety** | **Zero-Trust Guardrails** | Intercepts out-of-bounds commands and edits for manual approval. |
 | **Integration** | **Dynamic Context** | On-demand compilation of system specs and file contents. |
-| **Optimization** | **Token-Slasher** | Custom [`tool`](https://github.com/j5onrf/local-ai/tree/main/tools) and [`skill`](https://github.com/j5onrf/local-ai/tree/main/skills) integration built for minimal token use. |
+| **Optimization** | **Token-Slasher** | Custom [`tool`](https://github.com/j5onrf/fetch/tree/main/tools) and [`skill`](https://github.com/j5onrf/fetch/tree/main/skills) integration built for minimal token use. |
 | **Interface** | **Conversational TUI** | Rich, multi-turn chat sessions directly in the terminal. |
 | **Auditability** | **Zero-Dependency** | Under 500 lines of modular, standard-library Python. |
 
@@ -105,7 +105,7 @@ Agent: Workspace loaded. Awaiting instructions.
 <h2 align="center">TUI Carousel & Input Controls</h2>
 
 * **`Up` / `Down` Arrow Keys:** Cycle through available ranked selections.
-* **`Enter`:** Execute the highlighted command (or initialize a [workspace](https://github.com/j5onrf/local-ai/tree/main/projects) if the selection is a directory path).
+* **`Enter`:** Execute the highlighted command (or initialize a [workspace](https://github.com/j5onrf/fetch/tree/main/projects) if the selection is a directory path).
 * **`Esc` / `Right Arrow` / `Ctrl+C`:** Cancel/Skip the active menu, memory-recall, or tool authorization prompt cleanly.
 
 ```console
@@ -122,7 +122,7 @@ Agent: Workspace loaded. Awaiting instructions.
   <em>Manage your active cloud endpoints, inspect live API rankings, and toggle keys.</em>
 </p>
 
-* Run **`model select`** directly from your terminal to launch the interactive **[Cloud Connection](https://github.com/j5onrf/local-ai/tree/main/modules)** TUI.
+* Run **`model select`** directly from your terminal to launch the interactive **[Cloud Connection](https://github.com/j5onrf/fetch/tree/main/modules)** TUI.
 
 ---
 
@@ -164,7 +164,7 @@ Agent: Workspace loaded. Awaiting instructions.
 
 <h2 align="center">Agent Blueprint</h2>
 
-Add your shortcuts, commands, and workspaces to [`ai-context.md`](https://github.com/j5onrf/local-ai/blob/main/ai-context.md).
+Add your shortcuts, commands, and workspaces to [`ai-context.md`](https://github.com/j5onrf/fetch/blob/main/ai-context.md).
 
 ```markdown
 # --- Weather & Live Networking ---
@@ -172,7 +172,7 @@ Add your shortcuts, commands, and workspaces to [`ai-context.md`](https://github
 [TOOL] curl -s "wttr.in/?format=3" --cat ---> weather simple, wttr, weather
 
 # --- Local-Ai Agent Blueprint (CheatSheet) ---
-~/.config/local-ai/tools/blueprint --leaf ---> cheatsheet, blueprint, bp, cs
+~/.config/fetch/tools/blueprint --leaf ---> cheatsheet, blueprint, bp, cs
 ```
 
 ---
@@ -191,21 +191,21 @@ yay -S mdcat
 sudo pacman -S python-requests
 
 # 3. Clone the repository locally
-git clone https://github.com/j5onrf/local-ai.git ~/.config/local-ai
+git clone https://github.com/j5onrf/fetch.git ~/.config/fetch
 
 # 4. Add the environment hook into Bash & reload your profile
-echo '[ -f "$HOME/.config/local-ai/ai-hook.sh" ] && source "$HOME/.config/local-ai/ai-hook.sh"' >> ~/.bashrc
+echo '[ -f "$HOME/.config/fetch/ai-hook.sh" ] && source "$HOME/.config/fetch/ai-hook.sh"' >> ~/.bashrc
 source ~/.bashrc
 
 # 5. Create your private configuration file (No global exports needed!)
 # Fill in only what you use; the rest defaults safely.
 # The agent reads this dynamically on every run with zero terminal restarts.
-nano ~/.config/local-ai/.env
+nano ~/.config/fetch/.env
 ```
 
 #### Configuration Example (`.env`):
 ```env
-# ~/.config/local-ai/.env
+# ~/.config/fetch/.env
 # use "ai status" and "model select"
 
 # Claude API
@@ -234,25 +234,6 @@ AI_MAX_TOKENS=8192
 
 ---
 
-<h2 align="center">Roadmap to v1.0.0</h2>
+## Credits
 
-<p align="center">
-  <em>The final performance and security passes before the official stable release.</em>
-</p>
-
-- [ ] **Dynamic Stress-Testing:** Conduct continuous context-window pressure tests across standard (GGUF) and deep reasoning backends.
-- [ ] **Optimization Audits:** Run latency profiling and memory alignment passes on connection pooling and stream processing modules.
-- [ ] **Security Validation:** Implement automated file boundary testing to verify directory containment and authorization overrides.
-- [ ] **Final Code Optimizations:** Use strongest frontier coding model with exclusive finishing coding-skill.md to run a final pass and optimize final production ready product.
-- [ ] **Clean and Condense:** Only keep what is needed and useful.
-- [ ] **Finalize Logo:** Decide on final logo from concept art.
-- [ ] **Stable Tag Deployment:** Publish official **`v1.0.0`** production-stable release!
-
----
-
-## Credits & License
-
-*   **License**: Licensed under the permissive [MIT License](LICENSE).
-*   **Contributions**: Special thanks to [suyadnya](https://github.com/wibawasuyadnya) for the `.env` configuration architecture, macOS compatibility investigations, and high-velocity alias designs. Contributions are always welcome.
-
-
+*   **Origin**: Based on the foundational [local-ai](https://github.com/j5onrf/local-ai) framework.

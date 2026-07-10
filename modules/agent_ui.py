@@ -1,4 +1,4 @@
-# File: ~/.config/local-ai/modules/agent_ui.py
+# File: ~/.config/fetch/modules/agent_ui.py
 import os
 import sys
 import threading
@@ -220,8 +220,8 @@ def run_interactive_selection(
             cmd_to_show = current_cmd.replace("DANGER_FLAGGED:", "")
             display_cmd = cmd_to_show.replace(" >/dev/null 2>&1", "").replace(os.path.expanduser("~"), "~")
             
-            if "/.config/local-ai/projects/" in display_cmd:
-                display_cmd = display_cmd.replace("/.config/local-ai/projects/", "/")
+            if "/.config/fetch/projects/" in display_cmd:
+                display_cmd = display_cmd.replace("/.config/fetch/projects/", "/")
 
             idx_str = f"{current_idx + 1:02d}/{num_opts:02d}"
             

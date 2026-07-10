@@ -1,4 +1,4 @@
-# File: ~/.config/local-ai/modules/agent_cloud.py
+# File: ~/.config/fetch/modules/agent_cloud.py
 import os
 
 def get_active_configs(messages: list) -> list:

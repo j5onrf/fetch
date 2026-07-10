@@ -1,7 +1,7 @@
 # CODEBASE INDEX MAP & STRUCTURAL KNOWLEDGE GRAPH
 # Generated on      : 2026-07-09 09:02
 # Project Workspace : session-test
-# Target Directory  : ~/.config/local-ai/projects/session-test
+# Target Directory  : ~/.config/fetch/projects/session-test
 # -----------------------------------------------------------------------------------------
 # AI AGENT STRUCTURAL EXPLORATION INSTRUCTIONS:
 # This directory contains an active SQLite-backed semantic relationship map.
@@ -16,11 +16,11 @@
 #   architecture overview       - Compiles complete codebase statistics and files
 #
 # DIRECT EXECUTABLE PATHS:
-#   ~/.config/local-ai/tools/map/index-map trace <symbol>
-#   ~/.config/local-ai/tools/map/index-map blast-radius <symbol>
-#   ~/.config/local-ai/tools/map/index-map snippet <symbol>
-#   ~/.config/local-ai/tools/map/index-map search <pattern>
-#   ~/.config/local-ai/tools/map/index-map architecture
+#   ~/.config/fetch/tools/map/index-map trace <symbol>
+#   ~/.config/fetch/tools/map/index-map blast-radius <symbol>
+#   ~/.config/fetch/tools/map/index-map snippet <symbol>
+#   ~/.config/fetch/tools/map/index-map search <pattern>
+#   ~/.config/fetch/tools/map/index-map architecture
 # -----------------------------------------------------------------------------------------
 # Codebase Modules & Active Architecture:
 #   ├── Test Script.sh           - Define the input array of numbers
