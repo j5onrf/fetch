@@ -146,7 +146,7 @@ def draw_menu(selected, active_model, message=""):
     bold = "\033[1m"
     dim = "\033[90m"
     
-    sys.stdout.write(f"\n   {bold}  LOCAL-AI OFFLINE WORKSPACE{reset}\n")
+    sys.stdout.write(f"\n   {bold}  FETCH OFFLINE WORKSPACE{reset}\n")
     sys.stdout.write(f"   {dim}────────────────────────────────────────────────────────────{reset}\n\n")
     
     for i, model in enumerate(LOCAL_MODELS):

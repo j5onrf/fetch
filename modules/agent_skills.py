@@ -231,7 +231,7 @@ def run_skill_selector(workspace: str, raw_cmd: str, dept_skills_dir: str, stop_
 
 if __name__ == "__main__":
     # Setup config directories for standalone execution when invoked by ai-agent.py
-    CFG_DIR = os.path.expanduser("~/.config/local-ai")
+    CFG_DIR = os.path.expanduser("~/.config/fetch")
     DEPT_SKILLS_DIR = os.path.join(CFG_DIR, "skills", "dept")
     STOP_WORDS = {"is", "what", "it", "do", "any", "i", "have", "the", "a", "an", "on", "to", "for", "me", "you", "my", "your", "we", "us", "are", "about", "in", "how"}
     

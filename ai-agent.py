@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Local-Ai Agent [j5onrf] [v0.9.1.1]
+# Fetch Agent [j5onrf] [v0.9.1.1]
 
 import json
 import os
@@ -11,7 +11,7 @@ import time
 import urllib.request as urlreq
 
 # Configuration constants
-CFG_DIR = os.path.expanduser("~/.config/local-ai")
+CFG_DIR = os.path.expanduser("~/.config/fetch")
 CONTEXT_FILE = os.path.join(CFG_DIR, "ai-context.md")
 SKILLS_DIR = os.path.join(CFG_DIR, "skills")
 SESSIONS_DIR = os.path.join(CFG_DIR, "projects", "database")

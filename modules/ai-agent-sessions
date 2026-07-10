@@ -10,7 +10,7 @@ import time
 import re
 from contextlib import closing
 
-CFG_DIR = os.path.expanduser("~/.config/local-ai")
+CFG_DIR = os.path.expanduser("~/.config/fetch")
 SESSIONS_DIR = os.path.join(CFG_DIR, "projects", "database")
 os.makedirs(SESSIONS_DIR, exist_ok=True)
 
@@ -67,7 +67,7 @@ def print_session_box(workspace: str) -> None:
     box_w = 46
     
     lines = [
-        " >_ Local-AI Session Manager", "", 
+        " >_ Fetch Session Manager", "", 
         f" model:     {model}", 
         f" directory: {disp}", 
         f" skill:     {skill}", 

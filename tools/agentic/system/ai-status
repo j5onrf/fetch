@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# ai-status - Diagnostics for Local-AI Agent Stack v1.3.9 [j5onrf]
+# ai-status - Diagnostics for Fetch Agent Stack v1.3.9 [j5onrf]
 
 set -euo pipefail
 

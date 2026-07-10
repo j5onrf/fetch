@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# sysctl-aware system profiler for local-ai v1.2.6
+# sysctl-aware system profiler for fetch v1.2.6
 
 import glob
 import os

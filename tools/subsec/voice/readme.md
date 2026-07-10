@@ -1,4 +1,4 @@
-# Local-AI Tablet Voice Bridge
+# Fetch Tablet Voice Bridge
 
 <div align="center">
 <img alt="Image_eva8fveva8fveva8" src="https://github.com/user-attachments/assets/9722a863-ca27-4ac4-9203-90fd5e682c7c" width="800" />
@@ -6,7 +6,7 @@
 
 ---
 
-A zero-daemon, model-free voice-to-text pipeline that integrates any tablet (or phone) with your local-ai agent. It uses the browser-native HTML5 MediaRecorder API on the tablet to record audio, uploads it over local Wi-Fi, and transcribes it using your Gemini key (0% idle PC CPU, 0MB local models).
+A zero-daemon, model-free voice-to-text pipeline that integrates any tablet (or phone) with your fetch agent. It uses the browser-native HTML5 MediaRecorder API on the tablet to record audio, uploads it over local Wi-Fi, and transcribes it using your Gemini key (0% idle PC CPU, 0MB local models).
 
 ---
 
@@ -27,7 +27,7 @@ chmod +x $HOME/.config/fetch/tools/subsec/voice/voice-query
 Add this line to Section 4 of your `~/.config/fetch/ai-context.txt`:
 
 ```text
-# --- Local-Ai Tablet Voice Bridge ---
+# --- Fetch Tablet Voice Bridge ---
 $HOME/.config/fetch/tools/subsec/voice/voice-query ---> voice, voice query, voice bridge
 ```
 

@@ -43,9 +43,9 @@ Terminal Keyword: llmsum
 
 ---
 
-## Quick Launch via Local-Ai Agent
+## Quick Launch via Fetch Agent
 
-This TUI is designed to integrate seamlessly with your **Local-Ai Agent**. By registering `llmsum.py` in your semantic mapping index, you can launch the summary engine on-demand simply by typing the `llmsum` keyword:
+This TUI is designed to integrate seamlessly with your **Fetch Agent**. By registering `llmsum.py` in your semantic mapping index, you can launch the summary engine on-demand simply by typing the `llmsum` keyword:
 
 ```text
 # Add this line to your ~/.config/fetch/ai-context.txt

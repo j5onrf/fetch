@@ -14,7 +14,7 @@ try:
 except ImportError:
     ui = None
 
-CFG_DIR = os.path.expanduser("~/.config/local-ai")
+CFG_DIR = os.path.expanduser("~/.config/fetch")
 
 # 1. Parse Serialized Chat History from Stdin
 try:
@@ -151,7 +151,7 @@ if okey:
     # 10 second timeout for quick cloud failover
     configs.append((
         "https://openrouter.ai/api/v1/chat/completions",
-        {"Authorization": f"Bearer {okey}", "HTTP-Referer": "https://github.com/j5onrf/local-ai"},
+        {"Authorization": f"Bearer {okey}", "HTTP-Referer": "https://github.com/j5onrf/fetch"},
         m,
         {},
         10

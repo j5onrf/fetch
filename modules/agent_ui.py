@@ -111,12 +111,12 @@ def draw_session_box(
 ) -> None:
     """Draws a clean system status and information frame in the console."""
     version = ""
-    main_script_path = os.path.join(home_dir, ".config", "local-ai", "ai-agent.py")
+    main_script_path = os.path.join(home_dir, ".config", "fetch", "ai-agent.py")
     if os.path.exists(main_script_path):
         try:
             with open(main_script_path, "r", encoding="utf-8") as f:
                 for line in f:
-                    match = re.search(r"Local-Ai Agent\s+(v[0-9.]+)", line, re.I)
+                    match = re.search(r"Fetch Agent\s+(v[0-9.]+)", line, re.I)
                     if match:
                         version = match.group(1)
                         break
@@ -148,7 +148,7 @@ def draw_session_box(
         model_name = get_local_model_name()
 
     box_width = 46
-    title_line = f" >_ Local-AI Agent ({version})" if version else " >_ Local-AI Agent"
+    title_line = f" >_ Fetch Agent ({version})" if version else " >_ Fetch Agent"
     model_line = f" model:     {model_name}"
     dir_line   = f" directory: {display_dir}"
     skill_line = f" skill:     {clean_name}" if clean_name else " skill:     default"

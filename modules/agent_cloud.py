@@ -105,7 +105,7 @@ def get_active_configs(messages: list) -> list:
         }
         headers = {
             "Authorization": f"Bearer {openrouter_key}",
-            "HTTP-Referer": "https://github.com/j5onrf/local-ai"
+            "HTTP-Referer": "https://github.com/j5onrf/fetch"
         }
         configs.append((
             "https://openrouter.ai/api/v1/chat/completions",

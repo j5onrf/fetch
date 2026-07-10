@@ -9,7 +9,7 @@ Local agent workspaces, dynamic memories, save checkpoints, and codebase mapping
 ✔ Compiled index-map: ~/session-test/index-map-session-test.txt
 ✔ Created graph database: ~/session-test/index-map-memory-session-test.db
 ╭──────────────────────────────────────────────╮
-│  >_ Local-AI Agent                           │
+│  >_ Fetch Agent                           │
 │                                              │
 │  model:     Qwen3.6-35B-A3B.gguf             │
 │  directory: ...i/projects/session-test       │
@@ -77,7 +77,7 @@ Agent: Understood. I have noted your preferences:
 *   **Mode Segregation**: Standard conversational sessions (`ai`) and single-shot queries (`ai <query>`) operate in strict **read-only** mode. Active file-editing and command execution capabilities are strictly restricted to workspace agent sessions (`ai init`).
 *   **Workspace Boundary Lock**: Even when confirmation gates are disabled (`/g`), any attempt by the agent to read, write, or list files outside the active workspace directory (e.g., in `~` or system root `/`) **always** forces a manual `[Y/n]` authorization prompt.
 *   **Visual Line-Diffs**: Before applying any file modification, the agent renders a colorized unified line-diff directly in your terminal so changes can be inspected before approval.
-*   **Docker & Symlinking**: Run the agent inside a Docker container to isolate the execution context entirely from your host. You can symlink your local clone (`~/.config/local-ai`) into the container's volume mount directories, allowing you to modify files locally on your host while safely executing and testing them inside a secure sandbox.
+*   **Docker & Symlinking**: Run the agent inside a Docker container to isolate the execution context entirely from your host. You can symlink your local clone (`~/.config/fetch`) into the container's volume mount directories, allowing you to modify files locally on your host while safely executing and testing them inside a secure sandbox.
 *   **Vetting**: Scan all custom skills with [NVIDIA SkillSpector](https://github.com/NVIDIA/SkillSpector) before importing.
 
 ## 6. Codebase Graph Mapper & Relational Index

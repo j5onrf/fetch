@@ -1,4 +1,4 @@
-# Local-AI Agent Blueprint
+# Fetch Agent Blueprint
 
 > **Syntax**: `[command / execution] ──> [intent1], [intent2], [intent3]`  
 > **Delimiter**: `" ──> "` (Three-dash arrow with a trailing space)
@@ -109,7 +109,7 @@ ai init ~/.config/fetch/projects/session-test-2 --init ---> session test 2, proj
 ## 4. Static Aliases & Shell Shortcuts
 
 ```properties
-# --- Local-Ai Agent Blueprint (CheatSheet) ---
+# --- Fetch Agent Blueprint (CheatSheet) ---
 ~/.config/fetch/tools/blueprint --s --leaf ---> cheatsheet, bp, cs, blueprint
 
 # --- AI-Generated Git Commits ---
@@ -125,7 +125,7 @@ ai init ~/.config/fetch/projects/session-test-2 --init ---> session test 2, proj
 ## 5. TUI (Terminal User Interface) Programs
 
 ```properties
-# --- Dynamic Local-AI Model Select TUI  ---
+# --- Dynamic Fetch Model Select TUI  ---
 ~/.config/fetch/modules/model-select.py ---> model select, model selector, model selection, mst
 
 # --- Ai-Prompt-Writer-Image - Interactive TUI Console ---
@@ -148,7 +148,7 @@ ai init ~/.config/fetch/projects/session-test-2 --init ---> session test 2, proj
 # --- Article & YouTube Summarizers ---
 ~/.config/fetch/tools/subsec/ai-summary/llmsum.py ---> llmsum, ytsum, summary, sum
 
-# --- Local-Ai Tablet Voice Bridge ---
+# --- Fetch Tablet Voice Bridge ---
 # ~/.config/fetch/tools/subsec/voice/voice-query ---> voice, voice query, voice bridge
 ```
 

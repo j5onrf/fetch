@@ -380,7 +380,7 @@ def draw_main_menu(selected, gemini_curr, claude_curr, openai_curr, grok_curr, o
     or_free_display = f"{green}{or_curr}{reset}" if (or_active and is_or_free) else f"{dim}None selected{reset}"
     or_paid_display = f"{green}{or_curr}{reset}" if (or_active and not is_or_free) else f"{dim}None selected{reset}"
     
-    sys.stdout.write(f"\n   {bold}  LOCAL-AI CONFIGURATION{reset}\n")
+    sys.stdout.write(f"\n   {bold}  FETCH CONFIGURATION{reset}\n")
     sys.stdout.write(f"   {dim}────────────────────────────────────────────────────────────{reset}\n\n")
     
     options = [

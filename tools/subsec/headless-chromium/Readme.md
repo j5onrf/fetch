@@ -20,12 +20,12 @@ Extremely Low Code Weight: It uses Python's standard library and pre-installed s
 ~ ❯ pixel browse
 [01/01] ❯ [pixel browse] ~/.config/fetch/tools/subsec/headless-chromium/pixel-browse | cat
 :: ↵ run  Esc: 
-[Pixel] Enter target URL: https://github.com/j5onrf/local-ai
+[Pixel] Enter target URL: https://github.com/j5onrf/fetch
 [Pixel] Enter your question: what does the banner image say
 ── PIXEL-BROWSE RESULTS ────────────────────────────────────────────────────
 The banner image contains the following text:
 
-*   **Center:** "LOCAL-AI AGENT"
+*   **Center:** "FETCH AGENT"
 *   **Top Left:** "ai <query>"
 *   **Top Right:** "ai init"
 *   **Bottom Left:** "ai init"

@@ -111,7 +111,7 @@ def stream(messages, prefix, gkey, spinner_class, show_stats: bool = True):
         spinner.start()
         with urlreq.urlopen(req, timeout=30) as response:
             try:
-                cfg_dir = os.path.expanduser("~/.config/local-ai")
+                cfg_dir = os.path.expanduser("~/.config/fetch")
                 with open(os.path.join(cfg_dir, ".request_log"), "a", encoding="utf-8") as f:
                     f.write(f"{int(time.time())}|gemini-interactions\n")
             except Exception:

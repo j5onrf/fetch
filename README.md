@@ -1,5 +1,5 @@
 <p align="center">
-  <img alt="Local-AI Agent" src="https://github.com/j5onrf/fetch/blob/main/logo.svg" width="250" />
+  <img alt="Fetch Agent" src="https://github.com/j5onrf/fetch/blob/main/logo.svg" width="250" />
 </p>
 
 <h1 align="center">Fetch <kbd>v0.9.1.1-beta</kbd></h1>
@@ -32,7 +32,7 @@ All configurations and custom shortcuts are managed in [`ai-context.md`](ai-cont
       <br />
     </summary>
     <br />
-    <img alt="Local-Ai Agent Banner" src="https://github.com/user-attachments/assets/56fe2b60-0cbe-4f51-bc27-a35516f1088f" width="800" style="border-radius: 8px;" />
+    <img alt="Fetch Agent Banner" src="https://github.com/user-attachments/assets/56fe2b60-0cbe-4f51-bc27-a35516f1088f" width="800" style="border-radius: 8px;" />
   </details>
 </div>
 
@@ -171,7 +171,7 @@ Add your shortcuts, commands, and workspaces to [`ai-context.md`](https://github
 [TOOL] curl -s wttr.in --cat ---> weather full, wttr, weather
 [TOOL] curl -s "wttr.in/?format=3" --cat ---> weather simple, wttr, weather
 
-# --- Local-Ai Agent Blueprint (CheatSheet) ---
+# --- Fetch Agent Blueprint (CheatSheet) ---
 ~/.config/fetch/tools/blueprint --leaf ---> cheatsheet, blueprint, bp, cs
 ```
 
@@ -236,4 +236,4 @@ AI_MAX_TOKENS=8192
 
 ## Credits
 
-*   **Origin**: Based on the foundational [local-ai](https://github.com/j5onrf/local-ai) framework.
+*   **Origin**: Based on the foundational [fetch](https://github.com/j5onrf/fetch) framework.
