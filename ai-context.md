@@ -1,183 +1,241 @@
-# Fetch Blueprint
+<p align="center">
+  <img alt="Fetch Agent" src="https://github.com/j5onrf/fetch/blob/main/logo.svg" width="250" />
+</p>
 
-> **Syntax**: `[command / execution] ──> [intent1], [intent2], [intent3]`  
-> **Delimiter**: `" ──> "` (Three-dash arrow with a trailing space)
+<h1 align="center">Fetch <kbd>v0.9.1.1-beta</kbd></h1>
+
+<p align="center">
+  <img src="https://img.shields.io/github/last-commit/j5onrf/fetch?style=for-the-badge&labelColor=1f1f1f&color=8dbdff" alt="Last Commit">
+  <img src="https://img.shields.io/badge/language-python-a3be8c?style=for-the-badge&labelColor=1f1f1f" alt="Language">
+  <img src="https://img.shields.io/github/repo-size/j5onrf/fetch?style=for-the-badge&labelColor=1f1f1f&color=d6b4e0" alt="Repo Size">
+</p>
+
+<p align="center">
+  <code>agentic-tool-calls</code> &nbsp; <code>node: Q_79</code> &nbsp; <code>core: axon</code>
+</p>
 
 ---
 
-### Directional Syntax Guide
-1. `~/path`: Indexes workspace and launches a standard AI Workspace.
-2. `ai init --<skill>`: Indexes codebase workspace pre-primed with a chosen `--<skill>` (e.g., `--init` or `--coder`).
-3. `[TOOL] <command> [--s]`: Runs a background utility to inject dynamic Markdown context (append ` --s` to bypass confirmation).
-4. `<command>`: Launches a native terminal alias, interactive TUI, or document viewer (using `mdcat`, `leaf`, or `glow`).
+<h2 align="center">How it Works</h2>
+
+All configurations and custom shortcuts are managed in [`ai-context.md`](ai-context.md).
+
+*   **Direct (No Session)**: Sub-millisecond Jaccard matching (`jaccard_search`) instantly routes custom keywords to your local terminal.
+*   **Single-Turn Agent (`ai <query>`):** Returns a single response directly to your shell prompt without loading an active conversation.
+*   **Multi-Turn Chat (`ai` alone):** Starts a persistent terminal session with multi-turn context tracking.
+*   **Workspace Agents (`ai init <path>`):** Indexes your directory into a lightweight codebase graph and boots up a codebase-aware chat.
+
+<div align="center">
+  <details>
+    <summary style="cursor: pointer; color: #94A3B8; outline: none;">
+      <i>Click to expand ecosystem diagram</i>
+      <br />
+    </summary>
+    <br />
+    <img alt="Fetch Agent Banner" src="https://github.com/user-attachments/assets/56fe2b60-0cbe-4f51-bc27-a35516f1088f" width="800" style="border-radius: 8px;" />
+  </details>
+</div>
 
 ---
 
-## Active Session / Workspace / Projects
+<h2 align="center">CLI Launch Interface</h2>
 
-```properties
-# --- Session-Test - This is a Project Workspace (Skill-Primed) --
-ai init ~/.config/fetch/projects/session-test --init ---> session test, projects session, projects
-ai init ~/.config/fetch/projects/session-test-2 --init ---> session test 2, projects session, projects
+```console
+╭──────────────────────────────────────────────╮
+│  >_ Fetch Robotics                           │
+│                                              │
+│  model:     Qwen3.6-35B-A3B.gguf             │
+│  directory: ...-ai/projects/session-test     │
+│  skill:     init codef                       │
+│  database:  active (3 facts, 109 turns)      │
+╰──────────────────────────────────────────────╯
+[sys] Startup context: 210 tokens | Ctrl+C to exit.
+
+Agent: Workspace loaded. Awaiting instructions.
+❯
 ```
 
-## Core Session & Context Retrieval
+---
 
-```properties
-# --- Dynamic File Reader ---
-[TOOL] cat $1 ---> view file, read file, show file, vf
+<h2 align="center">Temporal Personality Memory (TPM)</h2>
 
-# --- Active Workspace Memory Viewer ---
-[TOOL] mdcat .agent/tpm.md | less -R ---> show memories, mem
-# --- Active Workspace Memory Searcher ---
-[TOOL] read -p "Search Memories: " query && mdcat .agent/tpm.md | grep --color=always -A 5 -B 2 -i "$query" ---> search memories, ms
+<p align="center">
+  <em>Evolving with your workspace, learning your habits, and standardizing your identity.</em>
+</p>
 
-# --- Active Workspace History Viewer ---
-[TOOL] mdcat history.md | less -R ---> show history, hist, history
-# --- Active Workspace History Searcher ---
-[TOOL] read -p "Search Page: " query && mdcat history.md | grep --color=always -A 15 -B 2 -i "$query" ---> search page, hs
+* [Weaviate Engram](https://github.com/weaviate/engram-python-sdk)'s active reconciliation concepts with [Noema](https://github.com/Fail-Safe/Noema)'s local Markdown file system.
 
-# --- Codebase Structural Tracing & Snippet Retrieval ---
-[TOOL] ~/.config/fetch/tools/map/index-map trace $1 --cat ---> trace symbol
-[TOOL] ~/.config/fetch/tools/map/index-map blast-radius $1 --cat ---> blast radius
-[TOOL] ~/.config/fetch/tools/map/index-map snippet $1 --cat ---> read function
-[TOOL] ~/.config/fetch/tools/map/index-map search $1 --cat ---> find symbol
-[TOOL] ~/.config/fetch/tools/map/index-map architecture --cat ---> architecture overview
+---
+
+<h2 align="center">Codebase Graph Mapper & Relational Index</h2>
+
+<p align="center">
+  <em>Building flat shorthand maps and queryable call graphs.</em>
+</p>
+
+* [Graphify](https://github.com/Graphify-Labs/graphify)'s codebase mapping with [codebase-memory-mcp](https://github.com/DeusData/codebase-memory-mcp)'s relationship queries.
+
+---
+
+<h2 align="center">System Administration & Diagnostics</h2>
+
+<p align="center">
+  <em>Inspecting package updates, monitoring system health, and optimizing performance.</em>
+</p>
+
+* [log-checker](/tools/agentic/system/log-checker) and [system-health](/tools/agentic/system/system-health) live diagnostics with [aur-audit](/tools/agentic/system/aur-audit), [security-audit](/tools/agentic/system/security-audit), [update-inspector](/tools/agentic/system/update-inspector) zero-trust auditing, [system-optimizer](/tools/agentic/system/system-optimizer) resource adjustments, [ai-status](/tools/agentic/system/ai-status) routing, and [ai-commit](/tools/agentic/system/ai-commit) hooks.
+
+---
+
+<h2 align="center">Core Capabilities</h2>
+
+| Core | Capability | Description |
+| :---: | :---: | :--- |
+| **Performance** | **Zero-Daemon** | 0% idle CPU/RAM. `Ultra-light` execution. |
+| **Intelligence** | **Scalability** | Optimized from `Qwen3.5-2B` up to frontier models. |
+| **Resiliency** | **Fallbacks** | `Gemini` → `OpenAI` → `Claude` → `xAI` → `OpenRouter` → `GGUF`. |
+| **Safety** | **Zero-Trust Guardrails** | Intercepts out-of-bounds commands and edits for manual approval. |
+| **Safety** | **Type-Safe Validation** | Enforces [Pydantic AI](https://github.com/pydantic/pydantic-ai)'s schema concepts natively. |
+| **Integration** | **Dynamic Context** | On-demand compilation of system specs and file contents. |
+| **Optimization** | **Token-Slasher** | Custom [`tool`](https://github.com/j5onrf/fetch/tree/main/tools) and [`skill`](https://github.com/j5onrf/fetch/tree/main/skills) integration built for minimal token use. |
+| **Interface** | **Conversational TUI** | Rich, multi-turn chat sessions directly in the terminal. |
+| **Auditability** | **Zero-Dependency** | Under 500 lines of modular, standard-library Python. |
+
+---
+
+<h2 align="center">TUI Carousel & Input Controls</h2>
+
+* **`Up` / `Down` Arrow Keys:** Cycle through available ranked selections.
+* **`Enter`:** Execute the highlighted command (or initialize a [workspace](https://github.com/j5onrf/fetch/tree/main/projects) if the selection is a directory path).
+* **`Esc` / `Right Arrow` / `Ctrl+C`:** Cancel/Skip the active menu, memory-recall, or tool authorization prompt cleanly.
+
+```console
+~ ❯ weather
+[01/02] ❯ [weather full] curl -s wttr.in | cat
+:: ↵ run  Esc:
 ```
 
-## 1. Dynamic Context-Injected Tools (RAG)
+---
 
-```properties
-# --- Firecrawl Web Scraper (Live URL Markdown Ingestion) ---
-[TOOL] ~/.config/fetch/tools/agentic/web/firecrawl $1 ---> firecrawl, scrape website, scrape url, extract text
+<h2 align="center">Model Select TUI</h2>
 
-# --- Dynamic Host Profiler & System Analytics ---
-[TOOL] cat ~/.config/fetch/skills/system/mysys.md --leaf ---> mysys, show mysys, view sys, mysys doc
-[TOOL] ~/.config/fetch/tools/generate-profile ---> generate profile, update sys profile, sync mysys
+<p align="center">
+  <em>Manage your active cloud endpoints, inspect live API rankings, and toggle keys.</em>
+</p>
 
-# --- Pre-Install Zero-Trust AUR Package & PKGBUILD Auditor ---
-[TOOL] ~/.config/fetch/tools/agentic/system/aur-audit ---> aur audit, audit package
+* Run **`model select`** directly from your terminal to launch the interactive **[Cloud Connection](https://github.com/j5onrf/fetch/tree/main/modules)** TUI.
 
-# --- Host Security Surface & Vulnerability Intelligence (SECAUD) ---
-[TOOL] ~/.config/fetch/tools/agentic/system/security-audit --leaf ---> security audit, secaud, system audit
+---
 
-# --- System Optimization (Improve System Performance) ---
-[TOOL] ~/.config/fetch/tools/agentic/system/system-optimizer --leaf ---> system optimizer, sysop, optimize
+<h2 align="center">Command Reference</h2>
 
-# --- System Logs & Diagnostics (Compressed Stream Triage) ---
-[TOOL] ~/.config/fetch/tools/agentic/system/log-checker ---> log checker, ailog, log check, check errors, system crashed, events
+### 1. Global Shell Commands
+*Executed directly from your terminal prompt.*
 
-# --- System Resources & Diagnosis (System Health) ---
-[TOOL] ~/.config/fetch/tools/agentic/system/system-health ---> system health, sysh, health, system diagnosis, why is my system slow
+| Command | Description |
+| :--- | :--- |
+| **`ai`** | Launch an interactive, multi-turn chat session. |
+| **`ai <query>`** | Get an instant, one-shot answer, straight back to your shell prompt. |
+| **`ai init <path>`** | Launch (or create) a codebase-aware workspace agent. |
+| **`hs` / `hist`** | Interactively search or view active workspace `history.md`. |
 
-# --- Pending Updates ---
-[TOOL] ~/.config/fetch/tools/agentic/system/update-inspector --leaf ---> update inspector, inspector, ui
+### 2. Active Session Commands
+*Typed directly inside an active chat session.*
 
-# --- AI Status & Provider Diagnostics ---
-[TOOL] ~/.config/fetch/tools/agentic/system/ai-status --s ---> ai status, aistat, status, aistatus 
+| Command | Description |
+| :--- | :--- |
+| **`/skill <query>`** *(or `/s`)* | Search and load dynamic specialist skills. |
+| **`view file <path>`** *(or `read`)* | Dynamically read local files directly into your model context. |
+| **`-save <tag>` / `-load`** | Save active states or rollback/clone snapshots (with Global Handoff). |
+| **`/f`** / **`/t`** / **`/b`** / **`/a`** | Trigger prompt-generating subroutines: Follow-up, Thinking, Brainstorm, or All. |
 
+### 3. Modular Toggle & Diagnostic Switches
+*Typed inside an active chat session to adjust settings.*
+
+| Command | Description |
+| :--- | :--- |
+| **`/clear`** / **`/reset`** | **Reset** Session context, local chat history, and the SQLite TPM table. |
+| **`/d`** / **`/e`** | **Disable** / **Enable** the context-aware grammar & spellchecker. |
+| **`/g`** | **Toggle** workspace confirmation gates ON/OFF (autonomous editing mode). |
+| **`/m`** | **Toggle** long-term memory and TPM reconciliation ON/OFF. |
+| **`/r`** / **`/r <tokens>`** | **Toggle** reasoning ON/OFF. Supports custom limits (default: 500). |
+| **`/stats` / `/tok`** | **Diagnostics**: Toggle real-time speed metrics or view live token usage. |
+
+---
+
+<h2 align="center">Agent Blueprint</h2>
+
+Add your shortcuts, commands, and workspaces to [`ai-context.md`](https://github.com/j5onrf/fetch/blob/main/ai-context.md).
+
+```markdown
 # --- Weather & Live Networking ---
-[TOOL] curl -s "wttr.in/?format=3" --cat ---> weather simple, wttr, weather, rain forecast simple
-[TOOL] curl -s wttr.in --cat ---> weather full, wttr, weather, rain forecast full
+[TOOL] curl -s wttr.in --cat ---> weather full, wttr, weather
+[TOOL] curl -s "wttr.in/?format=3" --cat ---> weather simple, wttr, weather
 
-# --- System Time & Date (Real-time Clock Context) ---
-[TOOL] date "+Current Time: %I:%M:%S %p %Z on %A, %B %d, %Y" ---> time, date, current time, what time is it
-
-# --- Disk Usage ---
-# [TOOL] df -h / ---> disk usage, drive usage
-```
-
-## 2. Workspace Initializers & Bridges
-
-```properties
-# --- OpenCode Direct Terminal Launcher ---
-# ~/.config/fetch/tools/subsec/opencode-bridge/opencode-bridge ---> opencode bridge, bridge, ocb
-# --- Odysseus Direct Terminal Launcher ---
-# ~/.config/fetch/tools/subsec/odysseus-bridge/odysseus-bridge ---> odysseus bridge, bridge, ody, odb
-# --- Hermes Direct Browser Workspace Launcher ---
-# ~/.config/fetch/tools/subsec/hermes-bridge/hermes-bridge ---> hermes bridge, bridge, hmb, herm
-```
-
-## 3. System Prompts & Role Injections (Skills)
-
-```properties
-# [TOOL] cat ~/.config/fetch/skills/identity/business/mybiz.md --leaf ---> mybiz, show business profile, view mybiz
-```
-
-## 4. Static Aliases & Shell Shortcuts
-
-```properties
 # --- Fetch Agent Blueprint (CheatSheet) ---
-~/.config/fetch/tools/blueprint --s --leaf ---> cheatsheet, bp, cs, blueprint
-
-# --- AI-Generated Git Commits ---
-~/.config/fetch/tools/agentic/system/ai-commit ---> ai-commit, gc, git commit
-
-# --- Index-Map (Graph-Enabled Code Intelligence Engine) ---
-[TOOL] ~/.config/fetch/tools/map/index-map --cat ---> index map, im
+~/.config/fetch/tools/blueprint --leaf ---> cheatsheet, blueprint, bp, cs
 ```
 
-## 5. TUI (Terminal User Interface) Programs
+---
 
-```properties
-# --- Dynamic Fetch Model Select TUI  ---
-~/.config/fetch/modules/model-select.py ---> model select, model selector, model selection, mst
+<h2 align="center">Setup & Prerequisites</h2>
 
-# --- Ai-Prompt-Writer-Image - Interactive TUI Console ---
-# [TOOL] ~/.config/fetch/tools/subsec/prompt/ai-prompt-writer-image --cat ---> prompt writer image, image prompt, ip
-# --- Ai-Prompt-Writer - Interactive TUI Console ---
-# [TOOL] ~/.config/fetch/tools/subsec/prompt/ai-prompt-writer --cat ---> prompt writer, prompt
+```bash
+# 1. Optional: Install terminal rendering utilities
+# (mdcat enables beautiful terminal markdown formatting)
+yay -S mdcat
 
-# --- Fusion-Research Engine (Compound MoA / Self-Fusion) ---
-# ~/.config/fetch/tools/agentic/fusion/f_research -r ---> fusion research, fusion, fr, deep research
-# --- AI Deep Research TUI ---
-# ~/.config/fetch/tools/subsec/research-tui/deep-research ---> deep research, research, dr
+# 2. Install the required requests dependency
+# Arch: sudo pacman -S python-requests
+# Debian/Ubuntu: sudo apt install python3-requests
+# macOS / Other: pip install requests
+sudo pacman -S python-requests
 
-# --- Custom TUI Applications ---
-~/.config/fetch/tools/subsec/basepage-tui/basepage.py ---> basepage, base, basepage tui, rss
-~/.config/fetch/tools/subsec/basepage-tui/basetracker.py ---> basetracker, base, basetracker tui
+# 3. Clone the repository locally
+git clone https://github.com/j5onrf/fetch.git ~/.config/fetch
 
-# --- Media & Volume Controllers (Pure Reactive) ---
-~/.config/fetch/tools/subsec/media/media.py ---> tuiamp, winamp, media
+# 4. Add the environment hook into Bash & reload your profile
+echo '[ -f "$HOME/.config/fetch/ai-hook.sh" ] && source "$HOME/.config/fetch/ai-hook.sh"' >> ~/.bashrc
+source ~/.bashrc
 
-# --- Article & YouTube Summarizers ---
-~/.config/fetch/tools/subsec/ai-summary/llmsum.py ---> llmsum, ytsum, summary, sum
-
-# --- Fetch Tablet Voice Bridge ---
-# ~/.config/fetch/tools/subsec/voice/voice-query ---> voice, voice query, voice bridge
+# 5. Create your private configuration file (No global exports needed!)
+# Fill in only what you use; the rest defaults safely.
+# The agent reads this dynamically on every run with zero terminal restarts.
+nano ~/.config/fetch/.env
 ```
 
-## 6. Graphical Applications & Webapps
+#### Configuration Example (`.env`):
+```env
+# ~/.config/fetch/.env
+# use "ai status" and "model select"
 
-```properties
-# --- System App Launcher (Ultra-Light Rofi-TUI) ---
-~/.config/fetch/tools/subsec/app-launcher/app-launcher.py ---> app launcher, app
+# Claude API
+CLAUDE_API_KEY="your-claude-api-key-here"
+CLAUDE_MODEL="claude-fable-5"
 
-# --- Native Webapp Wrappers & Browsers ---
-omarchy-launch-webapp https://music.youtube.com/ ---> youtube music, yt, music, youtube
-nohup uwsm app -- brave-origin --user-data-dir="~/.config/BraveSoftware/brave-spotify-bunker" --app=https://open.spotify.com/ >/dev/null 2>&1 & ---> spotify music, spotify, music
+# OpenAI API
+OPENAI_API_KEY="your-openai-api-key-here"
+OPENAI_MODEL="gpt-5.6"
+
+# x.AI Grok API
+XAI_API_KEY="xai-your-grok-api-key-here"
+XAI_MODEL="grok-4.5"
+
+# Google Gemini API
+GEMINI_API_KEY="AIzaSyYourFullGeminiApiKeyHere"
+GEMINI_MODEL="gemini-3.1-flash-lite"
+
+# OpenRouter API
+OPENROUTER_API_KEY="sk-or-v1-YourFullOpenRouterKeyHere"
+OPENROUTER_MODEL="openrouter/free"
+
+# Context Limits
+AI_MAX_TOKENS=8192
 ```
 
-## 7. Subsection Applications
+---
 
-```properties
-# --- Stopwatch ---
-~/.config/fetch/tools/subsec/stopwatch/stopwatch.py ---> stopwatch py, sw, stopwatch
-~/.config/fetch/tools/subsec/stopwatch/stopwatch.sh ---> stopwatch sh, sw, stopwatch
+## Credits
 
-# --- Notes ---
-~/.config/fetch/tools/subsec/notes/notes.sh ---> notes, open notes, add to notes
+*   **Origin**: Based on the foundational [local-ai agent](https://github.com/j5onrf/local-ai) framework.
 
-# --- State & Workflow Management ---
-~/.config/fetch/tools/subsec/hyprstate/work ---> hyprstate work, work, hs, hyprstate
-~/.config/fetch/tools/subsec/hyprstate/gitcom ---> hyprstate gitcom, gitcom, gcom, hs, hyprstate
-```
-
-## 8. Testing (Concepts & Prototypes)
-```properties
-# --- Pixel-Browse - Headless Visual Web Ingestion (((wip))) ---
-[TOOL] ~/.config/fetch/tools/subsec/headless-chromium/pixel-browse --cat ---> pixel browse, headless, chromium, pixel browser
-
-# --- Coding-Triangle-Loop - Interactive TUI Console (((wip))) ---
-# [TOOL] ~/.config/fetch/tools/agentic/coding/coding-triangle-loop --cat ---> coding loop, coding, triangle, loop
-```
