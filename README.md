@@ -236,4 +236,4 @@ AI_MAX_TOKENS=8192
 
 ## Credits
 
-*   **Origin**: Based on the foundational [fetch](https://github.com/j5onrf/fetch) framework.
+*   **Origin**: Based on the foundational [local-ai agent](https://github.com/j5onrf/local-ai) framework.
