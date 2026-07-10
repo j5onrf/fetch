@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Fetch Agent [j5onrf] [v0.9.1.1]
+# Fetch [j5onrf] [v0.9.1.1]
 
 import json
 import os

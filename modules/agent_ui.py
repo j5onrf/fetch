@@ -148,7 +148,7 @@ def draw_session_box(
         model_name = get_local_model_name()
 
     box_width = 46
-    title_line = f" >_ Fetch Agent ({version})" if version else " >_ Fetch Agent"
+    title_line = f" >< Fetch Agent ({version})" if version else " >< Fetch Agent"
     model_line = f" model:     {model_name}"
     dir_line   = f" directory: {display_dir}"
     skill_line = f" skill:     {clean_name}" if clean_name else " skill:     default"

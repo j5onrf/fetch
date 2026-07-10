@@ -16,7 +16,7 @@
 
 ---
 
-<h2 align="center">How the Agent Works</h2>
+<h2 align="center">How it Works</h2>
 
 All configurations and custom shortcuts are managed in [`ai-context.md`](ai-context.md).
 
@@ -42,7 +42,7 @@ All configurations and custom shortcuts are managed in [`ai-context.md`](ai-cont
 
 ```console
 ╭──────────────────────────────────────────────╮
-│  >_ Fetch                                    │
+│  >< Fetch Agent                              │
 │                                              │
 │  model:     Qwen3.6-35B-A3B.gguf             │
 │  directory: ...-ai/projects/session-test     │
