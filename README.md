@@ -42,7 +42,7 @@ All configurations and custom shortcuts are managed in [`ai-context.md`](ai-cont
 
 ```console
 ╭──────────────────────────────────────────────╮
-│  >_ Fetch Agent                              │
+│  >_ Fetch Robotics                           │
 │                                              │
 │  model:     Qwen3.6-35B-A3B.gguf             │
 │  directory: ...-ai/projects/session-test     │
@@ -238,3 +238,4 @@ AI_MAX_TOKENS=8192
 ## Credits
 
 *   **Origin**: Based on the foundational [local-ai agent](https://github.com/j5onrf/local-ai) framework.
+
