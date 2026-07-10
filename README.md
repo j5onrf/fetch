@@ -5,9 +5,9 @@
 <h1 align="center">Fetch <kbd>v0.9.1.1-beta</kbd></h1>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Last_Commit-Active-8dbdff?style=for-the-badge&labelColor=1f1f1f" alt="Last Commit">
+  <img src="https://img.shields.io/github/last-commit/j5onrf/fetch?style=for-the-badge&labelColor=1f1f1f&color=8dbdff" alt="Last Commit">
   <img src="https://img.shields.io/badge/language-python-a3be8c?style=for-the-badge&labelColor=1f1f1f" alt="Language">
-  <img src="https://img.shields.io/badge/Repo_Size-Private-d6b4e0?style=for-the-badge&labelColor=1f1f1f" alt="Repo Size">
+  <img src="https://img.shields.io/github/repo-size/j5onrf/fetch?style=for-the-badge&labelColor=1f1f1f&color=d6b4e0" alt="Repo Size">
 </p>
 
 <p align="center">
