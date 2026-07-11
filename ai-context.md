@@ -114,7 +114,7 @@ ai init ~/.config/fetch/projects/session-test-2 --init ---> session test 2, proj
 ~/.config/fetch/tools/agentic/system/ai-commit ---> ai-commit, gc, git commit
 
 # --- Index-Map (Graph-Enabled Code Intelligence Engine) ---
-[TOOL] ~/.config/fetch/tools/map/index-map --cat ---> index map, im
+[TOOL] ~/.config/fetch/tools/map/index-map --cat ---> index map, imap
 ```
 
 ## 5. TUI (Terminal User Interface) Programs

@@ -9,6 +9,7 @@ tools/agentic/fusion/logs
 .request_log
 .agent
 .env
+.state.json
 
 # Ignore Python cache directories and bytecode
 __pycache__/
