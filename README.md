@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <code>agentic-tool-calls</code> &nbsp; <code>node: Q_79</code> &nbsp; <code>core: axon</code>
+  <code>agentic-tool-calls</code> &nbsp; <code>node: Q_79</code> &nbsp; <code>core: onnx</code>
 </p>
 
 ---
@@ -276,7 +276,7 @@ AI_MAX_TOKENS=8192
 
 ## Credits
 
-*   **Origin**: Based on the foundational [local-ai agent](https://github.com/j5onrf/local-ai) framework.
+*   **Origin**: Based on the foundational [Local-Ai Agent](https://github.com/j5onrf/local-ai) framework.
 *   This application incorporates the [Cactus Needle](https://github.com/cactus-compute/needle) routing model developed by Cactus Compute, which is licensed under the MIT License:
 Copyright (c) 2026 Cactus Compute
 (Standard MIT License)
