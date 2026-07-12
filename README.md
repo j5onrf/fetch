@@ -274,5 +274,5 @@ Below is our phased engineering plan:
 *   **Origin**: Based on the foundational [local-ai agent](https://github.com/j5onrf/local-ai) framework.
 *   This application incorporates the [Cactus Needle](https://github.com/cactus-compute/needle) routing model developed by Cactus Compute, which is licensed under the MIT License:
 Copyright (c) 2026 Cactus Compute
-(Standard MIT License Text follows)
+(Standard MIT License)
 
