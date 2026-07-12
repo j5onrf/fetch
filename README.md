@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <code>agentic-tool-calls</code> &nbsp; <code>node: Q_79</code> &nbsp; <code>core: onnx</code>
+  <code>agentic-tool-calls</code> &nbsp; <code>node: .json</code> &nbsp; <code>core: onnx</code>
 </p>
 
 ---
