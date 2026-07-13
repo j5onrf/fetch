@@ -38,11 +38,13 @@ ai init ~/.config/fetch/projects/session-test-2 --init ---> session test 2, proj
 [TOOL] read -p "Search Page: " query && mdcat history.md | grep --color=always -A 15 -B 2 -i "$query" ---> search page, hs
 
 # --- Codebase Structural Tracing & Snippet Retrieval ---
-[TOOL] ~/.config/fetch/tools/map/index-map trace $1 --cat ---> trace symbol
-[TOOL] ~/.config/fetch/tools/map/index-map blast-radius $1 --cat ---> blast radius
-[TOOL] ~/.config/fetch/tools/map/index-map snippet $1 --cat ---> read function
-[TOOL] ~/.config/fetch/tools/map/index-map search $1 --cat ---> find symbol
-[TOOL] ~/.config/fetch/tools/map/index-map architecture --cat ---> architecture overview
+[TOOL] ~/.config/local-ai/tools/map/index-map trace $1 --cat ---> trace symbol
+[TOOL] ~/.config/local-ai/tools/map/index-map blast-radius $1 --cat ---> blast radius
+[TOOL] ~/.config/local-ai/tools/map/index-map snippet $1 --cat ---> read function
+[TOOL] ~/.config/local-ai/tools/map/index-map architecture --cat ---> architecture overview
+
+# --- Hybrid Semantic Codebase Search (sqlite-vec Enabled) ---
+[TOOL] ~/.config/local-ai/tools/map/index-map search $1 --cat ---> find symbol, semantic search, find concept, search code
 ```
 
 ## 1. Dynamic Context-Injected Tools (RAG)

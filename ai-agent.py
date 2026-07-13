@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Fetch [j5onrf] [v0.9.2.0]
+# Fetch [j5onrf] [v0.9.2.1]
 
 import json
 import os
