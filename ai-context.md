@@ -117,6 +117,9 @@ ai init ~/.config/fetch/projects/session-test-2 --init ---> session test 2, proj
 
 # --- Index-Map (Graph-Enabled Code Intelligence Engine) ---
 [TOOL] ~/.config/fetch/tools/map/index-map --cat ---> index map, imap
+
+# --- Email Automation & Secure Alert Dispatcher ---
+[TOOL] ~/.config/local-ai/tools/email/email-agent ---> email agent
 ```
 
 ## 5. TUI (Terminal User Interface) Programs

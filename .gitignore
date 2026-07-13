@@ -10,6 +10,7 @@ tools/agentic/fusion/logs
 .agent
 .env
 .state.json
+tools/email/.email
 
 # Ignore Python cache directories and bytecode
 __pycache__/
