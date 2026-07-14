@@ -2,7 +2,7 @@
   <img alt="Fetch Agent" src="https://github.com/j5onrf/fetch/blob/main/logo.svg" width="250" />
 </p>
 
-<h1 align="center">Fetch <kbd>v0.9.2.1-beta</kbd></h1>
+<h1 align="center">Fetch <kbd>v0.9.2.2-beta</kbd></h1>
 
 <p align="center">
   <img src="https://img.shields.io/github/last-commit/j5onrf/fetch?style=for-the-badge&labelColor=1f1f1f&color=8dbdff" alt="Last Commit">
