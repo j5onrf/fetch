@@ -2,7 +2,7 @@
   <table>
     <tr>
       <td align="center">
-        <b>Notice:</b> <b>Fetch</b> is a local-first, zero-latency CLI software robot agent.<br>
+        <b>Fetch</b> is a local-first, zero-latency CLI software robot agent.<br>
         Currently implementing <b>Cactus Needle 3</b> for on-device tool execution and data retrieval, looping results into the loaded local model (or cloud fallback) for response synthesis.
       </td>
     </tr>
