@@ -2,11 +2,41 @@
   <table>
     <tr>
       <td align="center">
-        <b>Fetch</b> is a local-first, zero-latency CLI software robot agent.<br>
-        Currently implementing <b>Cactus Needle 3</b> for on-device tool execution and data retrieval, looping results into the loaded local model (or cloud fallback) for response synthesis. TODO
+        <b>Fetch</b> is a local CLI agent.<br>
+        Currently adding <b>Laya</b> to decide tool vs chat, <b>Needle 3</b> to run tools locally, and local models (or cloud) to write the final answer.
       </td>
     </tr>
   </table>
+</div>
+
+```console
+                          User Query
+                              │
+                              ▼
+            ┌────────────────────────────────────┐
+            │         Stage 1: Router            │
+            │  Laya (Intent & Safety Triage)     │
+            └─────────────────┬──────────────────┘
+                              │
+              ┌───────────────┴───────────────┐
+              ▼                               ▼
+       [ Tool Intent ]                [ Conversational ]
+              │                               │
+              ▼                               ▼
+   ┌──────────────────────┐          ┌─────────────────┐
+   │    Cactus Needle 3   │          │  Local SLM /    │
+   │ (Extract JSON Args)  │          │  Cloud Model    │
+   └──────────┬───────────┘          └─────────────────┘
+              │
+              ▼
+      Execute Local Tool
+```
+
+<div align="center">
+  <p>
+    <sub><b>1. Router (Laya):</b> Decides tool vs chat in ~35ms. &nbsp;•&nbsp; <b>2. Tool Runner (Needle 3):</b> Runs tools locally on-device.<br>
+    <b>3. Final Answer (Local/Cloud):</b> Writes the response using Ling, Occamy, or Gemini.</sub>
+  </p>
 
   <br>
 
