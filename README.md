@@ -1,24 +1,25 @@
 <div align="center">
-
-> **Fetch** is a zero-latency, local-first CLI software robot agent for system control, autonomous coding, and tool automation.
->
-> * **`<0.1ms` Shortcut Triage:** Instant keyword and slash-command interception.
-> * **`~5ms` On-Device Routing:** Dispatches natural phrasing to local tools and MCP servers.
-> * **Dual-Track Synthesis:** Seamless execution across local MoE models and cloud fallbacks.
-
-</div>
-
-<br>
-
-<p align="center">
-  <img alt="Fetch Agent" src="https://github.com/j5onrf/fetch/blob/main/logo.svg" width="250" />
-</p>
+  <p>
+    <b>Fetch</b> is a zero-latency, local-first CLI software robot agent for system control, autonomous coding, and tool automation.
+  </p>
 
   <p>
-    <a href="https://github.com/j5onrf/py-agent"><img src="https://shieldcn.dev/badge/version-v0.9.9.35.svg?variant=secondary" alt="Version"></a>
-    <a href="https://github.com/j5onrf/py-agent"><img src="https://shieldcn.dev/badge/Python.svg?variant=branded&brand=python" alt="Language"></a>
-    <a href="https://github.com/j5onrf/py-agent"><img src="https://shieldcn.dev/badge/C%2B%2B.svg?variant=branded&brand=cplusplus" alt="C++"></a>
-    <a href="https://github.com/j5onrf/py-agent/blob/main/LICENSE"><img src="https://shieldcn.dev/badge/license-MIT-green.svg" alt="License"></a>
+    <code>&lt;0.1ms</code> <b>Shortcut Triage</b> &nbsp;•&nbsp;
+    <code>~5ms</code> <b>On-Device Routing</b> &nbsp;•&nbsp;
+    <b>Dual-Track Local/Cloud Synthesis</b>
+  </p>
+
+  <br>
+
+  <img alt="Fetch Agent" src="https://github.com/j5onrf/fetch/blob/main/logo.svg" width="240" />
+
+  <h1>fetch</h1>
+
+  <p>
+    <a href="https://github.com/j5onrf/fetch"><img src="https://shieldcn.dev/badge/version-v0.9.9.35.svg?variant=secondary" alt="Version"></a>
+    <a href="https://github.com/j5onrf/fetch"><img src="https://shieldcn.dev/badge/Python.svg?variant=branded&brand=python" alt="Language"></a>
+    <a href="https://github.com/j5onrf/fetch"><img src="https://shieldcn.dev/badge/C%2B%2B.svg?variant=branded&brand=cplusplus" alt="C++"></a>
+    <a href="https://github.com/j5onrf/fetch/blob/main/LICENSE"><img src="https://shieldcn.dev/badge/license-MIT-green.svg" alt="License"></a>
     <a href="https://shieldcn.dev/badge/status-beta-blue.svg"><img src="https://shieldcn.dev/badge/status-beta-blue.svg" alt="Status"></a>
   </p>
 
@@ -51,7 +52,7 @@
       </td>
     </tr>
   </table>
-  
+
   <p>
     <sub>* Recommended benchmark baselines &nbsp;•&nbsp; Run <code>model select</code> in your terminal to switch models</sub>
   </p>
@@ -99,7 +100,7 @@
 </div>
 
 <p align="center">
-  <sub><b>Session Hotkeys:</b> <code>/com</code> compact &nbsp;•&nbsp; <code>/adp</code> adapters &nbsp;•&nbsp; <code>/py</code> iPython &nbsp;•&nbsp; <code>/gnd</code> grounding &nbsp;•&nbsp; <code>/hs</code> hindsite </sub>
+  <sub><b>Session Hotkeys:</b> <code>/com</code> compact &nbsp;•&nbsp; <code>/adp</code> adapters &nbsp;•&nbsp; <code>/py</code> iPython &nbsp;•&nbsp; <code>/gnd</code> grounding &nbsp;•&nbsp; <code>/hs</code> hindsight</sub>
 </p>
 
 <br>
@@ -134,11 +135,11 @@
 
 <br>
 
-| Operational Tier | Py-Agent | DeepSeek (`dsh`) |
+| Operational Tier | Fetch | DeepSeek (`dsh`) |
 | :--- | :---: | :---: |
-| **Pure Chat** | **211 tokens** (`ai`) | ~450+ tokens |
-| **Native Core** | **~680 tokens** (`SMOL_TOOLS`) | ~632 tokens |
-| **Dual Mode** | **~760 tokens** (`python + native`) | ~1,200+ tokens |
+| **Pure Chat** | **211 tokens** (<code>ai</code>) | ~450+ tokens |
+| **Native Core** | **~680 tokens** (<code>SMOL_TOOLS</code>) | ~632 tokens |
+| **Dual Mode** | **~760 tokens** (<code>python + native</code>) | ~1,200+ tokens |
 | **Full Graph** | **~1,100 tokens** (11 tools + AST) | 2,500–4,000+ tokens |
 | **Idle Overhead** | **0% CPU / 0 MB RAM** | Node.js Active |
 
@@ -151,7 +152,7 @@
 <h2 align="center">Client Surfaces & Environments</h2>
 
 <p align="center">
-  Py-Agent is surface-agnostic. Switch seamlessly between terminal, web gateway, and desktop IDE:
+  Fetch is surface-agnostic. Switch seamlessly between terminal, web gateway, and desktop IDE:
 </p>
 
 <div align="center">
@@ -192,14 +193,14 @@
 
 <h2 align="center">Setup & Installation</h2>
 
-### 1. Install py-agent
+### 1. Install fetch
 
 ```bash
 # 1. Install dependencies (Arch/CachyOS or pip)
 sudo pacman -S python-rich python-requests
 
 # 2. Clone repository
-git clone https://github.com/j5onrf/py-agent.git ~/.config/fetch
+git clone https://github.com/j5onrf/fetch.git ~/.config/fetch
 
 # 3. Register shell hook (bash / zsh)
 echo '[ -f "$HOME/.config/fetch/ai-hook.sh" ] && \
@@ -222,7 +223,7 @@ cp ~/.config/fetch/.env.example ~/.config/fetch/.env
 
 ```env
 # ==============================================================================
-# Py-Agent Environment Configuration (.env.example)
+# Fetch Environment Configuration (.env.example)
 #
 # RULES:
 # 1. Top-Down: First uncommented key is active.
@@ -284,4 +285,3 @@ AI_MAX_TOKENS="8192"
 * **<a href="projects/Readme.md">Workspace Manual</a>**
 * **<a href="modules/Readme.md">System Architecture</a>**
 * Licensed under the permissive **[MODIFIED MIT LICENSE](LICENSE)**
-
