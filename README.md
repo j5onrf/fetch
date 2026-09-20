@@ -3,7 +3,7 @@
     <tr>
       <td align="center">
         <b>Fetch</b> is a local CLI agent.<br>
-        Currently adding <b>Laya</b> to decide tool vs chat, <b>Needle 3</b> to run tools locally, and local<br> models (or cloud) to write the final answer. Planning Stage.
+        Currently adding <b>Laya</b> to decide tool vs chat, <b>Needle 3</b> to run tools locally, and local<br> models (or cloud) to write the final answer. (Planning Stage)
       </td>
     </tr>
   </table>
@@ -23,7 +23,7 @@
                               │
               ┌───────────────┴───────────────┐
               ▼                               ▼
-       [ Tool Intent ]                [ Conversational ]
+       [ Tool Intent ]                [ Conversational ] 
               │                               │
               ▼                               │
     ┌───────────────────┐                     │
