@@ -3,7 +3,7 @@
     <tr>
       <td align="center">
         <b>Fetch</b> is a local-first, zero-latency CLI software robot agent.<br>
-        Currently implementing <b>Cactus Needle 3</b> for on-device tool execution and data retrieval, looping results into the loaded local model (or cloud fallback) for response synthesis.
+        Currently implementing <b>Cactus Needle 3</b> for on-device tool execution and data retrieval, looping results into the loaded local model (or cloud fallback) for response synthesis. TODO
       </td>
     </tr>
   </table>
@@ -67,7 +67,7 @@
 
 ```console
 ~ ❯ ai
-╭─  Py Agent  ─────────────╮
+╭─  Fetch  ────────────────╮
 │     model:  Occamy-1.0   │
 │ directory:  ~            │
 │   profile:  chat         │
