@@ -13,26 +13,34 @@
   <table width="600">
     <tr>
       <td><pre style="margin: 0; background: transparent; border: none; font-family: monospace; white-space: pre;">
-                          User Query
+User Query
                               │
                               ▼
             ┌────────────────────────────────────┐
-            │         Stage 1: Router            │
-            │  Laya (Intent & Safety Triage)     │
+            │          Stage 1: Router           │
+            │   Laya (Intent & Safety Triage)    │
             └─────────────────┬──────────────────┘
                               │
               ┌───────────────┴───────────────┐
               ▼                               ▼
        [ Tool Intent ]                [ Conversational ]
               │                               │
-              ▼                               ▼
-   ┌──────────────────────┐          ┌─────────────────┐
-   │    Cactus Needle 3   │          │  Local SLM /    │
-   │ (Extract JSON Args)  │          │  Cloud Model    │
-   └──────────┬───────────┘          └─────────────────┘    
-              │
-              ▼
-      Execute Local Tool</pre></td>
+              ▼                               │
+    ┌───────────────────┐                     │
+    │  Cactus Needle 3  │                     │
+    │ (JSON Extractor)  │                     │
+    └─────────┬─────────┘                     │
+              │                               │
+              ▼                               │
+      Execute Local Tool                      │
+              │                               │
+              ▼                               │
+    ┌─────────────────────────────────────────▼─┐
+    │          Stage 3: Final Answer            │
+    │      Local SLM / LLM / Cloud Model        │
+    │   (Synthesize result or reply to user)    │
+    └───────────────────────────────────────────┘
+     </pre></td>
     </tr>
   </table>
 </div>
