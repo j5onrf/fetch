@@ -5,7 +5,7 @@
 
   <p>
     <code>&lt;0.1ms</code> <b>Shortcut Triage</b> &nbsp;•&nbsp;
-    <code>~5ms</code> <b>On-Device Routing</b> &nbsp;•&nbsp;
+    <code>~5ms</code> <b>Cactus Needle 3 Routing</b> &nbsp;•&nbsp;
     <b>Dual-Track Local/Cloud Synthesis</b>
   </p>
 
