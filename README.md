@@ -1,8 +1,12 @@
 <div align="center">
-  <p>
-    <b>Fetch</b> is a local-first, no-latency CLI software robot agent.<br>
-    This repository is implementing <b>Cactus Needle 3</b> as an on-device (~5ms) semantic router to intercept natural language and execute local tools before delegating to local MoE models or cloud fallbacks.
-  </p>
+  <table>
+    <tr>
+      <td align="center">
+        <b>Fetch</b> is a local-first, zero-latency CLI software robot agent.<br>
+        This repository is implementing <b>Cactus Needle 3</b> as an on-device (~5ms) semantic router to intercept natural language and execute local tools before delegating to local MoE models or cloud fallbacks.
+      </td>
+    </tr>
+  </table>
 
   <br>
 
