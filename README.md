@@ -10,7 +10,7 @@
 
   <br>
 
-  <img alt="Fetch Agent" src="https://github.com/j5onrf/fetch/blob/main/logo.svg" width="230" />
+  <img alt="Fetch Agent" src="https://github.com/j5onrf/fetch/blob/main/logo.svg" width="200" />
 
   <h1>fetch</h1>
 
