@@ -26,7 +26,7 @@ try:
 except ImportError:
     _HAS_TERMIOS = False
 
-CFG_DIR: str = os.path.expanduser("~/.config/fetch")
+CFG_DIR: str = os.path.expanduser("~/.config/py-agent")
 _console, _console_err = Console(), Console(stderr=True)
 RE_UNSAFE_SHELL_CHARS: re.Pattern = re.compile(r'[\[\]{}()=\'"",;|<>#]')
 
@@ -424,8 +424,6 @@ def draw_session_box(
             border_style="green",
             box=ROUNDED,
             expand=False,
-            subtitle="[dim]Ctrl+C to exit[/dim]",
-            subtitle_align="right",
         )
     else:
         base_title, box_type, border_col, title_style = STYLES.get(box_style, STYLES[1])
@@ -437,8 +435,6 @@ def draw_session_box(
             border_style=border_col,
             box=box_type,
             expand=False,
-            subtitle="[dim]Ctrl+C to exit[/dim]",
-            subtitle_align="right",
         )
 
     _console.print(panel)
@@ -489,7 +485,7 @@ def run_interactive_selection(
             display_cmd = (
                 cmd_to_show.replace(" >/dev/null 2>&1", "")
                 .replace(os.path.expanduser("~"), "~")
-                .replace("/.config/fetch/projects/", "/")
+                .replace("/.config/py-agent/projects/", "/")
             )
 
             idx_str = f"{current_idx + 1:02d}/{num_opts:02d}"

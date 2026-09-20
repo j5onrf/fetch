@@ -9,12 +9,12 @@ Autonomous local developer agent with OKF memory, in-memory Python, and codebase
 OK: Profile set to: Custom Lingtiny [Yolo: ON] [Map: ON] [Mem: ON] [Py: ON] [Adp: ON]
 
  Map enabled: compiled index-map.
-╭─  Py Agent  ─────────────────────────────────────────────╮
+╭─  Fetch  ────────────────────────────────────────────────╮
 │     model:  Ling-3.0-tiny                                │
 │ directory:  ~/.config/fetch/projects/ling-tiny        │
 │   profile:  custom/lingtiny                              │
 │  database:  active (map + mem: 3m/5t)                    │
-╰───────────────────────────────────────── Ctrl+C to exit ─╯
+╰──────────────────────────────────────────────────────────╯
 
 ❯ /calm
  Calm mode enabled (silent tools & boat animation active).
