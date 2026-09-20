@@ -1,230 +1,319 @@
 #!/usr/bin/env python3
-# File: ~/.config/fetch/modules/agent_skills.py
-# Description: Unified library & executable for static, dynamic, and on-demand skills
+"""Unified library & executable for static, dynamic, universal YAML, and on-demand skills [Production Ready]"""
 
-import os
-import sys
-import re
-import subprocess
 import json
-import agent_ui as ui
+import os
+import re
+import shutil
+import subprocess
+import sys
+from typing import Any
+
 import agent_context as context
+import agent_ui as ui
+
+PAGER_STRIP_RE: re.Pattern = re.compile(r'\|\s*(leaf|mdcat|cat|glow|view)\b.*$', re.IGNORECASE)
+RE_FRONTMATTER_JSON: re.Pattern = re.compile(r'^\s*(\{[\s\S]*?\})\s*')
+RE_METADATA_LINE: re.Pattern = re.compile(r'^\w+:\s')
+RE_SKILL_SPLIT: re.Pattern = re.compile(r"[-_/]")
+RE_SKILL_BLOCK: re.Pattern = re.compile(r"### Loaded On-Demand Skill:\s*([^\n]+)\n([\s\S]*?)(?=\n\n### Loaded On-Demand Skill:|\Z)")
+
 
 def ensure_mysys_exists(skills_dir: str, cfg_dir: str) -> None:
-    mysys_path = os.path.join(skills_dir, "system", "mysys.md")
-    if not os.path.exists(mysys_path):
+    if not os.path.exists(os.path.join(skills_dir, "system", "mysys.md")):
         try:
-            generator = os.path.join(cfg_dir, "tools", "generate-profile")
-            subprocess.run([sys.executable, generator], check=False)
+            subprocess.run([sys.executable, os.path.join(cfg_dir, "tools", "generate-profile")], check=False)
         except Exception:
             pass
 
-def find_skill_file(base_dir: str, skill_name: str) -> str or None:
-    target_filename = f"{skill_name.lower()}.md"
+
+def parse_frontmatter(raw_text: str) -> tuple[dict[str, Any], str]:
+    """Universal parser for YAML (---), JSON ({}), and plain Markdown headers."""
+    if not raw_text:
+        return {}, ""
+    raw = raw_text.strip()
+
+    if raw.startswith("---"):
+        parts = raw.split("---", 2)
+        if len(parts) >= 3:
+            fm_str, body = parts[1].strip(), parts[2].strip()
+            meta = {}
+            cur_key = None
+            cur_val_lines = []
+
+            for line in fm_str.splitlines():
+                l_strip = line.strip()
+                if not l_strip or l_strip.startswith("#"):
+                    continue
+
+                if ":" in line and not line.startswith((" ", "\t", "-")):
+                    if cur_key:
+                        meta[cur_key] = " ".join(cur_val_lines).strip()
+                    k, v = line.split(":", 1)
+                    cur_key = k.strip().lower()
+                    v_clean = v.strip().strip("\"'")
+                    cur_val_lines = [] if v_clean in (">", "|", "") else [v_clean]
+                elif cur_key:
+                    cur_val_lines.append(l_strip.strip("\"'"))
+
+            if cur_key:
+                meta[cur_key] = " ".join(cur_val_lines).strip()
+            return meta, body
+
+    elif raw.startswith("{"):
+        if m := RE_FRONTMATTER_JSON.match(raw):
+            try:
+                meta = json.loads(m.group(1))
+                return meta, raw[m.end():].strip()
+            except (json.JSONDecodeError, TypeError):
+                pass
+
+    return {}, raw
+
+
+def find_skill_file(base_dir: str, skill_name: str) -> str | None:
+    """Locates target skill across standard flat files, on-demand directories, and nested SKILL.md structures."""
+    clean = skill_name.lstrip("-").lower()
+
+    # O(1) Fast-Path Lookups
+    candidates = [
+        os.path.join(base_dir, "on-demand", f"{clean}.md"),
+        os.path.join(base_dir, "profiles", "custom", f"{clean}.md"),
+        os.path.join(base_dir, "profiles", f"{clean}.md"),
+        os.path.join(base_dir, f"{clean}.md"),
+        os.path.join(base_dir, "system", f"{clean}.md"),
+        os.path.join(base_dir, clean, "SKILL.md"),
+        os.path.join(base_dir, clean, "skill.md"),
+        os.path.join(base_dir, "on-demand", clean, f"{clean}.md"),
+        os.path.join(base_dir, "on-demand", clean, "SKILL.md"),
+    ]
+    for cand in candidates:
+        if os.path.isfile(cand):
+            return cand
+
+    # Fallback directory scan (bounded depth)
+    target_fnames = {f"{os.path.basename(clean)}.md", "skill.md", "skill.md".upper()}
+    clean_target = os.path.basename(clean)
+
     for root, _, files in os.walk(base_dir):
-        if root[len(base_dir):].count(os.sep) <= 3:
+        if root[len(base_dir):].count(os.sep) <= 5:
+            if os.path.basename(root).lower() == clean_target:
+                for f in files:
+                    if f.lower() in ("skill.md", f"{clean_target}.md"):
+                        return os.path.join(root, f)
             for f in files:
-                if f.lower() == target_filename:
+                if f.lower() in target_fnames:
                     return os.path.join(root, f)
     return None
 
+
 def load_skill_content(skills_str: str, skills_dir: str, cfg_dir: str) -> str:
+    """Concatenates instruction contents of all matched skills, stripping frontmatter."""
     if not skills_str:
         return ""
-    contents = []
+    contents: list[str] = []
     for skill in [s.lstrip("-").lower() for s in skills_str.split()]:
-        skill_file = find_skill_file(skills_dir, skill)
-        if skill_file:
+        if sf := find_skill_file(skills_dir, skill):
             if "system" in skill:
                 ensure_mysys_exists(skills_dir, cfg_dir)
             try:
-                with open(skill_file, "r", encoding="utf-8") as f:
-                    contents.append(f.read().strip())
-            except Exception as e:
+                with open(sf, "r", encoding="utf-8") as f:
+                    raw = f.read().strip()
+                meta, body = parse_frontmatter(raw)
+
+                if meta:
+                    try:
+                        import agent_core
+                        for k, v in meta.items():
+                            k_l = str(k).lower().strip()
+                            if k_l == "yolo":
+                                if "AI_CONFIRM_GATES" not in os.environ:
+                                    agent_core.save_state("yolo_mode", str(v).lower() in ("true", "1", "yes", "on"))
+                            elif k_l in ("reasoning_budget", "thinking_budget", "budget"):
+                                try:
+                                    b_val = max(0, int(v))
+                                    agent_core.save_state("reasoning_budget", b_val)
+                                except (ValueError, TypeError):
+                                    pass
+                            elif k_l in ("map", "use_map", "index_map"):
+                                if "AI_USE_MAP" not in os.environ:
+                                    agent_core.save_state("use_map", str(v).lower() in ("true", "1", "yes", "on"))
+                            elif k_l in ("ipython", "py", "exec_python", "kernel"):
+                                if "AI_IPYTHON_MODE" not in os.environ:
+                                    agent_core.save_state("ipython_mode", str(v).lower() in ("true", "1", "yes", "on"))
+
+                        # Set adapters explicitly from frontmatter, otherwise default to False
+                        adp_val = meta.get("adapters") or meta.get("adp") or meta.get("adapter")
+                        agent_core.save_state("adapters_active", str(adp_val).lower() in ("true", "1", "yes", "on") if adp_val is not None else False)
+                    except Exception:
+                        pass
+
+                contents.append(body or raw)
+            except (OSError, UnicodeDecodeError) as e:
                 sys.stderr.write(f"\033[1;31mError loading skill '{skill}': {e}\033[0m\n")
     return "\n\n".join(contents)
 
-def run_local_tool(cmd: str) -> str:
+
+def _exec_tool_cmd(cmd: str, interactive: bool = False) -> str:
     try:
-        sanitized = re.sub(r'\|\s*(leaf|mdcat|cat|glow)\b.*$', '', cmd.strip()).strip()
-        # Dynamic working directory synchronization (forces all tools to run inside your active project)
-        workspace_path = os.environ.get("AI_WORKSPACE_PATH") or os.getcwd()
-        out = subprocess.check_output(
-            sanitized, 
-            shell=True, 
-            text=True, 
-            timeout=15, 
-            cwd=workspace_path, 
-            env={**os.environ, "AI_CONTEXT_RUN": "1"}
-        ).strip()
+        sanitized = PAGER_STRIP_RE.sub('', cmd.strip()).strip()
+        workspace = os.environ.get("AI_WORKSPACE_PATH") or os.getcwd()
+        env = {**os.environ, "AI_CONTEXT_RUN": "1"}
+        if interactive:
+            subprocess.run(sanitized, shell=True, cwd=workspace, env=env)
+            return "__ABORT_TURN__"
+        res = subprocess.run(sanitized, shell=True, capture_output=True, text=True, timeout=180, cwd=workspace, env=env)
+        out = ((res.stdout or "") + (("\n" + res.stderr) if res.stderr else "")).strip()
         return f"{out}\n" if out else "Action executed successfully.\n"
-    except subprocess.CalledProcessError:
-        # Gracefully handle tool execution failures or user cancellations (Ctrl+C)
-        sys.stderr.write(f"\033[1;31m[sys] Tool execution failed or was cancelled.\033[0m\n")
+    except subprocess.TimeoutExpired:
+        sys.stderr.write("\033[1;31m[sys] Tool execution timed out (180s limit).\033[0m\n")
         sys.stderr.flush()
         return "__ABORT_TURN__"
-    except Exception as e:
+    except (OSError, subprocess.SubprocessError) as e:
         sys.stderr.write(f"\033[1;31m[sys] Error running tool: {e}\033[0m\n")
         sys.stderr.flush()
         return "__ABORT_TURN__"
 
-def run_interactive_tool(cmd: str) -> str:
-    """Runs an interactive terminal tool directly in the user's active foreground shell.
-    
-    By connecting stdout/stdin directly to the terminal, interactive prompts (like read -p)
-    and pagers function natively. Aborts the turn cleanly upon exit.
-    """
-    try:
-        sanitized = re.sub(r'\|\s*(leaf|mdcat|cat|glow)\b.*$', '', cmd.strip()).strip()
-        workspace_path = os.environ.get("AI_WORKSPACE_PATH") or os.getcwd()
-        # Executes with standard streams connected directly to your active terminal window
-        subprocess.run(
-            sanitized, 
-            shell=True, 
-            cwd=workspace_path, 
-            env={**os.environ, "AI_CONTEXT_RUN": "1"}
-        )
-        return "__ABORT_TURN__"
-    except Exception as e:
-        sys.stderr.write(f"\033[1;31m[sys] Error running interactive tool: {e}\033[0m\n")
-        sys.stderr.flush()
-        return "__ABORT_TURN__"
 
-def get_system_context(query: str, context_file: str, stop_words: set, skills_dir: str, cfg_dir: str) -> str:
-    q_tokens = context.tokenize(query, stop_words)
-    if not q_tokens or "\n" in query.strip():
+def run_local_tool(cmd: str) -> str:
+    return _exec_tool_cmd(cmd, interactive=False)
+
+
+def run_interactive_tool(cmd: str) -> str:
+    return _exec_tool_cmd(cmd, interactive=True)
+
+
+EXCLUDED_CONTEXT_TOOLS = (
+    "agent_voice.py",
+    "agent_tts.py",
+    "agent_tui.py",
+    "agent_ui.py",
+    "agent_core.py",
+    "agent_cloud.py",
+    "agent_usage.py",
+    "agent_tui_async.py",
+    "model-select.py",
+    "speed_test.py",
+)
+
+
+def get_system_context(query: str, context_file: str, stop_words: set[str], skills_dir: str, cfg_dir: str) -> str:
+    if not (q_tokens := context.tokenize(query, stop_words)) or "\n" in query.strip():
         return ""
     for entry in context.load_context_entries(context_file, stop_words):
         ent_tokens = entry.get("tokens", [])
-        if any(q_tokens[i:i+len(ent_tokens)] == ent_tokens for i in range(len(q_tokens) - len(ent_tokens) + 1)):
-            tool = entry.get("cmd", "")
-            if tool.startswith("[TOOL]"):
-                tool = tool.replace("[TOOL]", "").strip()
-                
-                # --- DYNAMIC FOREGROUND EXECUTION HOOK ---
-                # If the tool requires interactive input (read -p) or a pager (less, fzf),
-                # we run it natively in the foreground and abort the turn cleanly upon exit.
-                if "read -p" in tool or "less" in tool or "fzf" in tool:
-                    return run_interactive_tool(tool)
-                
-                if " --s" not in tool:
-                    if not ui.confirm_tool(tool):
-                        return "__ABORT_TURN__"
-                if "system" in tool.lower():
-                    ensure_mysys_exists(skills_dir, cfg_dir)
-                tool = tool.replace(" --s", "").strip()
-                for flag in [" --leaf", " --glow", " --cat", " --mdcat"]:
-                    tool = tool.replace(flag, "")
-                intent_tokens = set(context.tokenize(entry.get("intent", ""), stop_words))
-                
-                # --- PATH-AWARE ARGUMENT PARSER ---
-                args_list = []
-                for w in query.split():
-                    if any(c in w for c in ("/", "~", ".")):
-                        args_list.append(w)
-                    elif context.tokenize(w, stop_words) and context.tokenize(w, stop_words)[0] not in intent_tokens:
-                        args_list.append(w)
-                args = " ".join(args_list)
-                
-                if "$1" in tool or "{}" in tool:
-                    tool = tool.replace("$1", args).replace("{}", args).strip()
-                sys.stderr.write(f"\033[2m[sys] Executing: {tool}\033[0m\n")
-                sys.stderr.flush()
-                return run_local_tool(tool)
+        if any(q_tokens[i:i + len(ent_tokens)] == ent_tokens for i in range(len(q_tokens) - len(ent_tokens) + 1)):
+            tool = entry.get("cmd", "").replace("[TOOL]", "").strip()
+            if tool.startswith("ai ") or "ai init" in tool or any(ex in tool for ex in EXCLUDED_CONTEXT_TOOLS):
+                continue
+            if any(k in tool for k in ("read -p", "less", "fzf")):
+                return run_interactive_tool(tool)
+            if " --s" not in tool and not ui.confirm_tool(tool):
+                return ""
+
+            if "system" in tool.lower():
+                ensure_mysys_exists(skills_dir, cfg_dir)
+            tool = tool.replace(" --s", "").strip()
+            for flag in (" --leaf", " --glow", " --cat", " --mdcat", " --view"):
+                tool = tool.replace(flag, "")
+            intent_tokens = set(context.tokenize(entry.get("intent", ""), stop_words))
+
+            args = " ".join(w for w in query.split() if any(c in w for c in ("/", "~", ".")) or (context.tokenize(w, stop_words) and context.tokenize(w, stop_words)[0] not in intent_tokens))
+            if "$1" in tool or "{}" in tool:
+                tool = tool.replace("$1", args).replace("{}", args).strip()
+
+            sys.stderr.write(f"\033[2m[sys] Executing: {tool}\033[0m\n")
+            sys.stderr.flush()
+            return run_local_tool(tool)
     return ""
 
 
-# --- DYNAMIC ON-DEMAND SKILL SELECTOR TUI ---
+def load_skill_blueprints(base_skills_dir: str, stop_words: set[str]) -> list[dict[str, Any]]:
+    """Universal indexer: walks skills directory and parses all markdown and YAML frontmatter skills."""
+    blueprints: list[dict[str, Any]] = []
+    seen_names = set()
 
-def load_skill_blueprints(dept_skills_dir: str, stop_words: set) -> list:
-    blueprints = []
-    if os.path.exists(dept_skills_dir):
-        for r, _, fs in os.walk(dept_skills_dir):
-            for f in fs:
-                if f.endswith(".md"):
-                    path = os.path.join(r, f)
+    if os.path.exists(base_skills_dir):
+        for root, _, files in os.walk(base_skills_dir):
+            for f in files:
+                if f.lower().endswith(".md"):
+                    path = os.path.join(root, f)
                     try:
-                        # Read file lines
                         with open(path, "r", encoding="utf-8") as sf:
-                            lines = [line.strip() for line in sf.readlines()]
-                        
-                        if not lines:
+                            content = sf.read().strip()
+                        if not content:
                             continue
 
-                        first_line = lines[0]
-                        
-                        # Find the first valid description line (skipping headers, lists, and YAML tags)
-                        desc_line = ""
-                        for line in lines:
-                            # Skip empty lines, headers, lists, blockquotes, and YAML metadata (e.g., "name: pirate")
-                            if (line 
-                                and not line.startswith(("#", "---", ">", "*", "-", "import "))
-                                and not re.match(r'^\w+:\s', line)):
-                                desc_line = line
-                                break
+                        meta, body = parse_frontmatter(content)
+                        lines = [l.strip() for l in (body or content).splitlines() if l.strip()]
+                        folder_name = os.path.basename(root)
 
-                        # 1. Parse legacy/strict format if present: "# [SKILL] Name ---> intents"
-                        if first_line.startswith("# [SKILL]") and "--->" in first_line:
-                            header, intents = first_line.split("--->", 1)
-                            skill_name = header.replace("# [SKILL]", "").strip()
-                            intent_list = [i.strip() for i in intents.split(",") if i.strip()]
+                        if meta and ("name" in meta or "description" in meta):
+                            skill_name = meta.get("name") or (folder_name if f.lower() == "skill.md" else os.path.splitext(f)[0])
+                            desc = meta.get("description", "")
+                            intents = list(set(
+                                RE_SKILL_SPLIT.split(skill_name.lower()) +
+                                RE_SKILL_SPLIT.split(folder_name.lower()) +
+                                context.tokenize(desc, stop_words) +
+                                context.tokenize(skill_name, stop_words)
+                            ))
+                        elif lines and lines[0].startswith("# [SKILL]") and "--->" in lines[0]:
+                            header, intents_raw = lines[0].split("--->", 1)
+                            skill_name = header.replace("# [SKILL]", "").replace("#", "").strip()
+                            intents = [i.strip().lower() for i in intents_raw.split(",") if i.strip()]
+                            desc = next((l for l in lines[1:] if not l.startswith(("#", "---", ">", "*", "-", "import ")) and not RE_METADATA_LINE.match(l)), "")
                         else:
-                            # 2. Fallback: Parse dynamically from the file's header or filename
-                            base_name = os.path.splitext(f)[0]  # e.g., "pirate-talk"
-                            
-                            # Extract skill name from first header, otherwise clean up the filename
-                            first_header = next((l.replace("#", "").strip() for l in lines if l.startswith("#")), None)
-                            if first_header:
-                                skill_name = first_header
-                            else:
-                                skill_name = base_name.replace("-", " ").replace("_", " ").title()
-                            
-                            # Extract search intents from the filename and the skill name
-                            filename_tokens = re.split(r"[-_]", base_name.lower())
-                            skill_name_tokens = context.tokenize(skill_name, stop_words)
-                            intent_list = list(set(filename_tokens + skill_name_tokens))
+                            base_name = folder_name if f.lower() == "skill.md" else os.path.splitext(f)[0]
+                            skill_name = next((l.replace("#", "").strip() for l in lines if l.startswith("#")), base_name.replace("-", " ").replace("_", " ").title())
+                            intents = list(set(RE_SKILL_SPLIT.split(base_name.lower()) + context.tokenize(skill_name, stop_words)))
+                            desc = next((l for l in lines if not l.startswith(("#", "---", ">", "*", "-", "import ")) and not RE_METADATA_LINE.match(l)), "")
 
-                        rel_path = os.path.relpath(path, dept_skills_dir)
+                        clean_name = skill_name.lower().strip()
+                        if clean_name in seen_names:
+                            continue
+                        seen_names.add(clean_name)
+
+                        clean_desc = desc.replace("\n", " ").strip() if desc else "No description provided."
+
                         blueprints.append({
-                            "name": skill_name.lower(),
+                            "name": clean_name,
                             "path": path,
-                            "rel_path": rel_path,
-                            "desc": desc_line if desc_line else "No description provided.",
-                            "intents": intent_list,
-                            "tokens": context.tokenize(" ".join(intent_list), stop_words)
+                            "rel_path": os.path.relpath(path, base_skills_dir),
+                            "desc": clean_desc,
+                            "intents": intents,
+                            "tokens": context.tokenize(" ".join(intents), stop_words)
                         })
                     except Exception:
                         pass
     return blueprints
 
-def run_skill_selector(workspace: str, raw_cmd: str, dept_skills_dir: str, stop_words: set) -> None:
-    try:
-        history_data = sys.stdin.read().strip()
-        chat_history = json.loads(history_data)
-    except Exception as e:
-        sys.stderr.write(f"\033[1;31m[skill-mgr] Failed to load history: {e}\033[0m\n")
-        sys.exit(1)
+
+def run_skill_selector(workspace: str, raw_cmd: str, base_skills_dir: str, stop_words: set[str], chat_history: list[dict[str, Any]] | None = None) -> tuple[list[dict[str, Any]], str | None]:
+    """Interactive arrow-key skill loading overlay across all skill subdirectories."""
+    if chat_history is None:
+        try:
+            chat_history = json.loads(sys.stdin.read().strip())
+        except Exception:
+            chat_history = [{"role": "system", "content": ""}]
 
     parts = raw_cmd.strip().split(maxsplit=1)
     search_query = parts[1].strip() if len(parts) > 1 else ""
-    skills = load_skill_blueprints(dept_skills_dir, stop_words)
+    skill_list = load_skill_blueprints(base_skills_dir, stop_words)
     current_idx = 0
-
-    sys.stderr.write("\033[?25l")  # Hide terminal cursor
+    sys.stderr.write("\033[?25l")
     sys.stderr.flush()
-    
+
     try:
         while True:
-            # 1. Dynamically calculate candidates matching the active search query
+            q_tokens = set(context.tokenize(search_query, stop_words)) if search_query else set()
+            sq_lower = search_query.lower()
             candidates = []
-            for s in skills:
+            for s in skill_list:
                 if not search_query:
                     candidates.append((1.0, s))
                 else:
-                    q_tokens = set(context.tokenize(search_query, stop_words))
                     s_tokens = set(s["tokens"])
                     score = len(q_tokens & s_tokens) / len(q_tokens | s_tokens) if (q_tokens & s_tokens) else 0.0
-                    sq_lower = search_query.lower()
                     if sq_lower in s["name"] or sq_lower in os.path.basename(s["path"]).lower() or any(sq_lower in i for i in s["intents"]):
                         score = max(score, 0.8)
                     if score > 0.0:
@@ -232,87 +321,89 @@ def run_skill_selector(workspace: str, raw_cmd: str, dept_skills_dir: str, stop_
 
             candidates.sort(key=lambda x: -x[0])
             num_opts = len(candidates)
-
-            # Ensure selection pointer stays within bounds
             if num_opts > 0 and current_idx >= num_opts:
                 current_idx = 0
 
-            # 2. Render the TUI Frame
+            cols = shutil.get_terminal_size((80, 24)).columns or 80
+            max_desc_len = max(10, cols - 42)
+
             if num_opts == 0:
-                # No matches found for current search buffer
-                sys.stderr.write(f"\r\x1b[K\033[1;30m[00/00]\033[0m ❯ \x1b[1;31m[No matches]\x1b[0m for: \033[1;33m{search_query}\033[0m\n")
-                sys.stderr.write(f"\r\x1b[K\033[3m   \"Backspace to delete\"\033[0m [Esc to exit]: ")
-                sys.stderr.flush()
+                sys.stderr.write(f"\r\x1b[2K\033[1;30m[00/00]\033[0m ❯ \x1b[1;31m[No matches]\x1b[0m for: \033[1;33m{search_query}\033[0m\n\r\x1b[2K\033[3m   \"Backspace to delete\"\033[0m [Esc to exit]: ")
             else:
-                _, selected_skill = candidates[current_idx]
-                idx_str = f"{current_idx + 1:02d}/{num_opts:02d}"
-                filter_indicator = f" \033[90m| Filter: \033[1;33m{search_query}\033[0m" if search_query else ""
-                
-                sys.stderr.write(f"\r\x1b[K\033[1;30m[\033[1;32m{idx_str}\033[1;30m]\033[0m ❯ \x1b[1;36m[skill]\x1b[0m \033[1;32m{selected_skill['name']}\033[0m \033[90m({selected_skill['rel_path']}){filter_indicator}\033[0m\n")
-                sys.stderr.write(f"\r\x1b[K\033[3m   \"{selected_skill['desc']}\"\033[0m [↵ load  Type to filter  Esc]: ")
-                sys.stderr.flush()
-            
-            # 3. Read Keypress
+                _, sel = candidates[current_idx]
+                clean_desc = sel['desc'].replace('\n', ' ').strip()
+                desc = clean_desc if len(clean_desc) <= max_desc_len else clean_desc[:max_desc_len - 3] + "..."
+                filter_ind = f" \033[90m| Filter: \033[1;33m{search_query}\033[0m" if search_query else ""
+                sys.stderr.write(f"\r\x1b[2K\033[1;30m[\033[1;32m{current_idx + 1:02d}/{num_opts:02d}\033[1;30m]\033[0m ❯ \x1b[1;36m[skill]\x1b[0m \033[1;32m{sel['name']}\033[0m \033[90m({sel['rel_path']}){filter_ind}\033[0m\n\r\x1b[2K\033[3m   \"{desc}\"\033[0m [↵ load  Type to filter  Esc]: ")
+            sys.stderr.flush()
+
             key = ui.get_key()
-            
-            # Escape / Ctrl+C / Quit
+            clear_2_lines = "\r\x1b[2K\x1b[1A\r\x1b[2K"
             if key in ('\x03', '\x1b'):
-                sys.stderr.write("\r\x1b[K\x1b[1A\r\x1b[KCancelled.\n")
-                break
-                
-            # Enter / Load Selected Skill
-            elif key in ('\r', ''):
+                sys.stderr.write(f"{clear_2_lines}Cancelled.\n")
+                return chat_history, None
+            elif key in ('\r', '\n', ''):
                 if num_opts > 0:
-                    _, selected_skill = candidates[current_idx]
+                    _, sel = candidates[current_idx]
                     try:
-                        with open(selected_skill["path"], "r") as sf: 
-                            skill_body = sf.read().strip()
-                        chat_history[0]["content"] += f"\n\n### Loaded On-Demand Skill: {selected_skill['name']}\n{skill_body}\n"
-                        sys.stderr.write(f"\r\x1b[K\x1b[1A\r\x1b[K\033[2;32m[sys] Skill '{selected_skill['name']}' successfully loaded.\033[0m\n")
-                        print(json.dumps(chat_history))
+                        with open(sel["path"], "r", encoding="utf-8") as sf:
+                            raw_file = sf.read().strip()
+                        _, body = parse_frontmatter(raw_file)
+                        body = body or raw_file
+
+                        sys_c = chat_history[0]["content"] if chat_history else ""
+                        raw_blocks = RE_SKILL_BLOCK.findall(sys_c)
+                        cat = "personality" if "personality" in sel["path"] else ("code" if "code" in sel["path"] else "system")
+
+                        active_skills = []
+                        for s_n, s_b in raw_blocks:
+                            s_cat = "personality" if any(p in s_n for p in ("caveman", "pirate", "personality")) else "other"
+                            if s_cat != cat and s_n != sel["name"]:
+                                active_skills.append((s_n, s_b))
+
+                        active_skills.append((sel["name"], body))
+                        if len(active_skills) > 3:
+                            active_skills = active_skills[-3:]
+
+                        base_p = sys_c.split("### Loaded On-Demand Skill:")[0].strip()
+                        new_blocks = "\n\n".join(f"### Loaded On-Demand Skill: {n}\n{b}" for n, b in active_skills)
+                        chat_history[0]["content"] = f"{base_p}\n\n{new_blocks}\n" if base_p else f"{new_blocks}\n"
+
+                        s_name = sel["name"].replace(" ", "-")
+                        sys.stderr.write(f"{clear_2_lines}\033[1;32m✓ Skill '{sel['name']}' successfully loaded.\033[0m\n\n")
+                        return chat_history, s_name
                     except Exception as e:
-                        sys.stderr.write(f"\r\x1b[K\x1b[1A\r\x1b[K\033[1;31m[sys] Failed to load skill: {e}\033[0m\n")
+                        sys.stderr.write(f"{clear_2_lines}\033[1;31m[sys] Failed to load skill: {e}\033[0m\n")
                 else:
-                    sys.stderr.write("\r\x1b[K\x1b[1A\r\x1b[KNo skill selected.\n")
-                break
-                
-            # Arrow Keys Navigation
-            elif key in ('\x1b[A', '\x1b[B'):
+                    sys.stderr.write(f"{clear_2_lines}No skill selected.\n")
+                return chat_history, None
+            elif key == '\x1b[A':
                 if num_opts > 0:
-                    current_idx = (current_idx + (1 if key == '\x1b[B' else -1) + num_opts) % num_opts
-                sys.stderr.write("\r\x1b[K\x1b[1A\r\x1b[K")
-                
-            # Backspace
+                    current_idx = max(0, current_idx - 1)
+                sys.stderr.write(clear_2_lines)
+            elif key == '\x1b[B':
+                if num_opts > 0:
+                    current_idx = min(num_opts - 1, current_idx + 1)
+                sys.stderr.write(clear_2_lines)
             elif key in ('\x7f', '\x08'):
-                if len(search_query) > 0:
-                    search_query = search_query[:-1]
-                    current_idx = 0
-                sys.stderr.write("\r\x1b[K\x1b[1A\r\x1b[K")
-                
-            # Printable Characters (Dynamic search filter append)
+                if search_query:
+                    search_query, current_idx = search_query[:-1], 0
+                sys.stderr.write(clear_2_lines)
             elif len(key) == 1 and key.isprintable():
-                search_query += key
-                current_idx = 0
-                sys.stderr.write("\r\x1b[K\x1b[1A\r\x1b[K")
+                search_query, current_idx = search_query + key, 0
+                sys.stderr.write(clear_2_lines)
             else:
-                # Discard unknown escapes
-                sys.stderr.write("\r\x1b[K\x1b[1A\r\x1b[K")
-                
-    except KeyboardInterrupt:
-        sys.stderr.write("\r\x1b[K\x1b[1A\r\x1b[KCancelled.\n")
-        sys.stderr.flush()
-        sys.exit(130)
+                sys.stderr.write(clear_2_lines)
     finally:
-        sys.stderr.write("\033[?25h")  # Show terminal cursor
+        sys.stderr.write("\033[?25h")
         sys.stderr.flush()
 
 
 if __name__ == "__main__":
-    # Setup config directories for standalone execution when invoked by ai-agent.py
     CFG_DIR = os.path.expanduser("~/.config/fetch")
-    DEPT_SKILLS_DIR = os.path.join(CFG_DIR, "skills", "dept")
-    STOP_WORDS = {"is", "what", "it", "do", "any", "i", "have", "the", "a", "an", "on", "to", "for", "me", "you", "my", "your", "we", "us", "are", "about", "in", "how"}
-    
+    stop_words = getattr(context, "STOP_WORDS", {"is", "what", "it", "do", "any", "i", "have", "the", "a", "an", "on", "to", "for", "me", "you", "my", "your", "we", "us", "are", "about", "in", "how"})
     if len(sys.argv) < 3:
-        sys.exit(1)
-    run_skill_selector(sys.argv[1], sys.argv[2], DEPT_SKILLS_DIR, STOP_WORDS)
+        sys.argv.extend(["", ""])
+    hist, name = run_skill_selector(sys.argv[1], sys.argv[2], os.path.join(CFG_DIR, "skills"), stop_words)
+    if hist:
+        print(json.dumps(hist))

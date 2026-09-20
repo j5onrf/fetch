@@ -1,72 +1,106 @@
 #!/usr/bin/env bash
-# Fetch Hook v0.9.2.1
+# Production Py-Agent Shell Hook v0.9.9.28 (Hardened & Production Ready)
 
-[[ $- != *i* ]] && return
-
+[[ $- == *i* && -f "$HOME/.config/fetch/ai-agent.py" ]] || return
 _AI_DIR="$HOME/.config/fetch"
-_AI_SCRIPT_PATH="$_AI_DIR/ai-agent.py"
-[[ -f "$_AI_SCRIPT_PATH" ]] || return
+_AI_PY="${_AI_PY:-$(command -v python3 || command -v python)}"
 
-command -v python3 >/dev/null 2>&1 && _AI_PYTHON_BIN="python3" || _AI_PYTHON_BIN="python"
-
-for f in "$_AI_DIR"/.active_cd.*; do
-    [[ -f "$f" ]] && { pid="${f##*.active_cd.}"; kill -0 "$pid" 2>/dev/null || rm -f "$f"; }
-done
+# Clean up own PID file if terminal window or tab is closed
+trap 'rm -f "$_AI_DIR/.active_cd.$$" 2>/dev/null' EXIT HUP TERM INT
 
 _ai_teleport() {
-    local rc=$? f="$_AI_DIR/.active_cd.$$"
-    [[ -f "$f" ]] && { cd "$(<"$f")" && rm -f "$f"; }
-    return $rc
+    local f="$_AI_DIR/.active_cd.$$"
+    # FAST-PATH: Do zero work on normal prompt redraws
+    if [[ -f "$f" ]]; then
+        local target
+        target=$(<"$f")
+        rm -f "$f"
+        [[ -d "$target" ]] && cd "$target" 2>/dev/null
+    fi
 }
 
-[[ "$PROMPT_COMMAND" != *_ai_teleport* ]] && PROMPT_COMMAND="_ai_teleport${PROMPT_COMMAND:+; $PROMPT_COMMAND}"
+if [[ -n "$ZSH_VERSION" ]]; then
+    autoload -Uz add-zsh-hook 2>/dev/null && add-zsh-hook precmd _ai_teleport
+elif [[ "$PROMPT_COMMAND" != *_ai_teleport* ]]; then
+    PROMPT_COMMAND="_ai_teleport${PROMPT_COMMAND:+; $PROMPT_COMMAND}"
+fi
 
 ai_handle_missing() {
-    [[ -n "$ZSH_VERSION" ]] && setopt local_options ksh_arrays
-    [[ -z "$*" ]] && return 127
-    local cmd=$("$_AI_PYTHON_BIN" "$_AI_SCRIPT_PATH" --interactive "$*")
-    [[ -z "$cmd" ]] && return 127
-    local exp="${cmd/#\~/$HOME}"
-    [[ -d "$exp" ]] && ai init "$exp" || eval "$cmd"
-}
+    local cmd exp esc
+    cmd=$([[ -n "$*" ]] && "$_AI_PY" "$_AI_DIR/ai-agent.py" --interactive "$*") || return 127
+    esc=$(printf '\033')
+    exp=$(printf '%s' "$cmd" | sed -E "s/${esc}\[[0-9;]*[a-zA-Z]|\r//g")
+    # Safe tilde expansion: only expand ~ and ~/ (preserves ~user, git HEAD~1, etc.)
+    if [[ "$exp" == "~" ]]; then
+        exp="$HOME"
+    elif [[ "$exp" == "~/"* ]]; then
+        exp="${HOME}/${exp#\~/}"
+    fi
 
-command_not_found_handle() { [[ "$1" == --* ]] && return 127; ai_handle_missing "$*"; }
+    if [[ -d "$exp" ]]; then
+        ai init "$exp"
+    elif [[ "$exp" == *.py && -f "$exp" ]]; then
+        "$_AI_PY" "$exp"
+    else
+        eval "$exp"
+    fi
+}
+command_not_found_handle() { [[ "$1" != --* ]] && ai_handle_missing "$*"; }
 command_not_found_handler() { command_not_found_handle "$@"; }
 
 ai() {
+    # Lightweight sweep: clean stale teleport files only when ai is invoked
+    local old pid
+    for old in "$_AI_DIR"/.active_cd.*; do
+        [[ -e "$old" ]] || continue
+        pid="${old##*.active_cd.}"
+        kill -0 "$pid" 2>/dev/null || rm -f "$old"
+    done
+
     if [[ "$1" == "init" ]]; then
-        local path=$(pwd) skills=() name map db
-        
-        # If the second argument is not empty and does not start with "-", treat it as a path
-        if [[ -n "${2:-}" && "${2:-}" != -* ]]; then
-            path="$2"
-            skills=("${@:3}")
-        else
-            skills=("${@:2}")
+        shift
+        local path skills=() name map db map_arg=()
+        path=$(pwd)
+
+        if [[ -n "${1:-}" && "$1" != -* ]]; then
+            path="$1"
+            shift
         fi
-        
-        # If the directory does not exist, automatically create it first
-        if [[ ! -d "$path" ]]; then
-            mkdir -p "$path" || return 1
-        fi
-        
-        path=$(CDPATH= cd "$path" && pwd) || return 1
+        skills=("$@")
+
+        mkdir -p "$path" && path=$(CDPATH= cd "$path" && pwd -P) || return 1
         echo "$path" > "$_AI_DIR/.active_cd.$$"
         name=$(basename "$path")
-        map="$path/index-map-$name.txt"
-        db="$path/index-map-memory-$name.db"
-        
-        # Fast newer-file/directory or missing database check
-        [[ ! -f "$map" ]] || [[ ! -f "$db" ]] || [[ "$path" -nt "$map" ]] || [[ -n "$(find "$path" ! -path "$path" -not -path '*/.git/*' -not -path '*/.agent/*' -not -name 'history.md' ! -name "$(basename "$map")" -newer "$map" -print -quit 2>/dev/null)" ]] && {
-            "$_AI_PYTHON_BIN" "$_AI_DIR/tools/map/index-map" "$path" || return 1
-        }
-        
-        if [[ -f "$map" ]]; then
-            AI_ACTIVE_SKILL="${skills[*]}" AI_WORKSPACE_PATH="$path" "$_AI_PYTHON_BIN" "$_AI_SCRIPT_PATH" --talk-chat "$(<"$map")"
-        else
-            printf "\033[1;31mError: Context file not found at: %s\033[0m\n" "$map" >&2 && return 1
+
+        if grep -qE '"map": *true|"-map"' "$path/.agent/config.json" 2>/dev/null; then
+            map="$path/.agent/index-map-$name.txt"; [[ -f "$map" ]] || map="$path/index-map-$name.txt"
+            db="$path/.agent/index-map-memory-$name.db"; [[ -f "$db" ]] || db="$path/index-map-memory-$name.db"
+
+            if [[ ! -f "$map" || ! -f "$db" || "$path" -nt "$map" ]] || [[ -n "$(find "$path" -mindepth 1 -not -path '*/.git/*' -not -path '*/.agent/*' -not -name '*.md' -newer "$map" -print -quit 2>/dev/null)" ]]; then
+                "$_AI_PY" "$_AI_DIR/tools/index-map/index-map" --agent "$path" || { rm -f "$_AI_DIR/.active_cd.$$"; return 1; }
+                map="$path/.agent/index-map-$name.txt"; [[ -f "$map" ]] || map="$path/index-map-$name.txt"
+            fi
+            [[ -f "$map" ]] && map_arg=("$(<"$map")")
         fi
+
+        AI_ACTIVE_SKILL="${skills[*]}" AI_WORKSPACE_PATH="$path" "$_AI_PY" "$_AI_DIR/ai-agent.py" --talk-chat "${map_arg[@]}" || true
+        _ai_teleport
+        rm -f "$_AI_DIR/.active_cd.$$" 2>/dev/null
     else
-        "$_AI_PYTHON_BIN" "$_AI_SCRIPT_PATH" --talk "$@"
+        "$_AI_PY" "$_AI_DIR/ai-agent.py" --talk "$@"
+    fi
+}
+
+view() {
+    local f="${1:-}"
+    if [[ -z "$f" && (! -t 0 || -p /dev/stdin) ]]; then
+        FORCE_COLOR=1 "$_AI_PY" -c "import sys,rich.markdown,rich.console;rich.console.Console().print(rich.markdown.Markdown(sys.stdin.read()))"
+    elif [[ -n "$f" && "$f" == *.md && -f "$f" ]]; then
+        FORCE_COLOR=1 "$_AI_PY" -m rich.markdown "$f"
+    elif [[ -n "$f" ]]; then
+        cat "$@"
+    else
+        echo "Usage: view <file.md> or <command> | view" >&2
+        return 1
     fi
 }

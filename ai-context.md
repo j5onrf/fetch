@@ -1,188 +1,116 @@
-# Fetch Blueprint
+# Py-Agent Config
 
 > **Syntax**: `[command / execution] ──> [intent1], [intent2], [intent3]`  
-> **Delimiter**: `" ──> "` (Three-dash arrow with a trailing space)
+> **Delimiter**: `" ---> "` (Three-dash arrow with a trailing space)
 
 ---
 
-### Directional Syntax Guide
-1. `~/path`: Indexes workspace and launches a standard AI Workspace.
-2. `ai init --<skill>`: Indexes codebase workspace pre-primed with a chosen `--<skill>` (e.g., `--init` or `--coder`).
-3. `[TOOL] <command> [--s]`: Runs a background utility to inject dynamic Markdown context (append ` --s` to bypass confirmation).
-4. `<command>`: Launches a native terminal alias, interactive TUI, or document viewer (using `mdcat`, `leaf`, or `glow`).
+### Syntax Guide
+1. `ai init [path]`: Index workspace and launch interactive agent session.
+2. `ai init --<skill> [path]`: Index workspace primed with a specific agent profile.
+3. `[TOOL] <command>`: Execute system tool (prompts for `[Y/n]` authorization).
+4. `[TOOL] <command> --s`: Execute tool silently (bypasses confirmation gate).
+5. `<command>`: Terminal shortcut, alias, or file viewer.
 
 ---
 
-## Active Session / Workspace / Projects
+## 1. Start Agent
 
 ```properties
-# --- Session-Test - This is a Project Workspace (Skill-Primed) --
-ai init ~/.config/fetch/projects/session-test --init ---> session test, projects session, projects
-ai init ~/.config/fetch/projects/session-test-2 --init ---> session test 2, projects session, projects
+# --- Agent Diagnostic ---
+[TOOL] ~/.config/fetch/tools/test-agent --cat --s ---> agent test, ta
+# --- Model Selector ---
+~/.config/fetch/modules/model-select.py ---> model select, cloud model
+# --- Project Creator ---
+~/.config/fetch/tools/new-project ---> new project, newproject, newp, new-project
+# --- AI Status ---
+[TOOL] ~/.config/fetch/tools/agentic/system/ai-status ---> aistatus, aistat, ais
+# --- Cheatsheet ---
+[TOOL] ~/.config/fetch/tools/cheatsheet ---> cheatsheet, cs
+# --- Eval Model & Profile (Agentic Tool Benchmark) ---
+~/.config/fetch/tools/evals/eval-stack --->  eval stack, eval-stack
+# --- System Orchestrator TUI ---
+[TOOL] ~/.config/fetch/tools/system-stack ---> system stack, sysstack
 ```
 
-## Core Session & Context Retrieval
+## 2. Projects
 
 ```properties
-# --- Dynamic File Reader ---
-[TOOL] cat $1 ---> view file, read file, show file, vf
-
-# --- Active Workspace Memory Viewer ---
-[TOOL] mdcat .agent/tpm.md | less -R ---> show memories, mem
-# --- Active Workspace Memory Searcher ---
-[TOOL] read -p "Search Memories: " query && mdcat .agent/tpm.md | grep --color=always -A 5 -B 2 -i "$query" ---> search memories, ms
-
-# --- Active Workspace History Viewer ---
-[TOOL] mdcat history.md | less -R ---> show history, hist, history
-# --- Active Workspace History Searcher ---
-[TOOL] read -p "Search Page: " query && mdcat history.md | grep --color=always -A 15 -B 2 -i "$query" ---> search page, hs
-
-# --- Codebase Structural Tracing & Snippet Retrieval ---
-[TOOL] ~/.config/local-ai/tools/map/index-map trace $1 --cat ---> trace symbol
-[TOOL] ~/.config/local-ai/tools/map/index-map blast-radius $1 --cat ---> blast radius
-[TOOL] ~/.config/local-ai/tools/map/index-map snippet $1 --cat ---> read function
-[TOOL] ~/.config/local-ai/tools/map/index-map architecture --cat ---> architecture overview
-
-# --- Hybrid Semantic Codebase Search (sqlite-vec Enabled) ---
-[TOOL] ~/.config/local-ai/tools/map/index-map search $1 --cat ---> find symbol, semantic search, find concept, search code
+# --- Workspaces ---
+ai init ~/.config/fetch/projects/occamy ---> occamy
+ai init ~/.config/fetch/projects/tini-cybersec ---> tini-cybersec, tini cybersec
+ai init ~/.config/fetch/projects/ornith ---> ornith
+ai init ~/.config/fetch/projects/katcoder ---> katcoder
+ai init ~/.config/fetch/projects/nex-n2 ---> nex-n2, nex n2
+ai init ~/.config/fetch/projects/qwen2b ---> qwen2b
+ai init ~/.config/fetch/projects/deepseek ---> deepseek-v4
+ai init ~/.config/fetch/projects/gemini ---> gemini
+ai init ~/.config/fetch/projects/ling-tiny ---> ling-tiny
+ai init ~/.config/fetch/projects/omarchyv4 ---> omarchyv4
+ai init ~/.config/fetch/projects/minicpm ---> minicpm
+ai init ~/.config/fetch/projects/session-test ---> session test, projects session
 ```
 
-## 1. Dynamic Context-Injected Tools (RAG)
+## 3. Plugins
 
 ```properties
-# --- Firecrawl Web Scraper (Live URL Markdown Ingestion) ---
-[TOOL] ~/.config/fetch/tools/agentic/web/firecrawl $1 ---> firecrawl, scrape website, scrape url, extract text
-
-# --- Dynamic Host Profiler & System Analytics ---
-[TOOL] cat ~/.config/fetch/skills/system/mysys.md --leaf ---> mysys, show mysys, view sys, mysys doc
-[TOOL] ~/.config/fetch/tools/generate-profile ---> generate profile, update sys profile, sync mysys
-
-# --- Pre-Install Zero-Trust AUR Package & PKGBUILD Auditor ---
-[TOOL] ~/.config/fetch/tools/agentic/system/aur-audit ---> aur audit, audit package
-
-# --- Host Security Surface & Vulnerability Intelligence (SECAUD) ---
-[TOOL] ~/.config/fetch/tools/agentic/system/security-audit --leaf ---> security audit, secaud, system audit
-
-# --- System Optimization (Improve System Performance) ---
-[TOOL] ~/.config/fetch/tools/agentic/system/system-optimizer --leaf ---> system optimizer, sysop, optimize
-
-# --- System Logs & Diagnostics (Compressed Stream Triage) ---
-[TOOL] ~/.config/fetch/tools/agentic/system/log-checker ---> log checker, ailog, log check, check errors, system crashed, events
-
-# --- System Resources & Diagnosis (System Health) ---
-[TOOL] ~/.config/fetch/tools/agentic/system/system-health ---> system health, sysh, health, system diagnosis, why is my system slow
-
-# --- Pending Updates ---
-[TOOL] ~/.config/fetch/tools/agentic/system/update-inspector --leaf ---> update inspector, inspector, ui
-
-# --- AI Status & Provider Diagnostics ---
-[TOOL] ~/.config/fetch/tools/agentic/system/ai-status --s ---> ai status, aistat, status, aistatus 
-
-# --- Weather & Live Networking ---
-[TOOL] curl -s "wttr.in/?format=3" --cat ---> weather simple, wttr, weather, rain forecast simple
-[TOOL] curl -s wttr.in --cat ---> weather full, wttr, weather, rain forecast full
-
-# --- System Time & Date (Real-time Clock Context) ---
-[TOOL] date "+Current Time: %I:%M:%S %p %Z on %A, %B %d, %Y" ---> time, date, current time, what time is it
-
-# --- Disk Usage ---
-# [TOOL] df -h / ---> disk usage, drive usage
+# --- PyCode Setup & Build ---
+~/.config/fetch/plugins/pycode/setup.sh ---> install-pycode, setup-pycode, setup pycode
+# --- Model Context Protocol (MCP) ---
+~/.config/fetch/plugins/mcp/mcp_client.py list ---> mcp list, mcp tools, mcpl
+~/.config/fetch/plugins/mcp/mcp_client.py schemas ---> mcp schemas, mcp export
+# Fetch: fetch <url> — Fast standard URL markdown scraper. Example: fetch https://docs.python.org/3
+[TOOL] ~/.config/fetch/plugins/mcp/mcp_client.py fetch ---> fetch, mcp fetch
+[TOOL] ~/.config/fetch/plugins/mcp/mcp_client.py call sqlite query ---> mcp sqlite, query db
+# Context7: docs <libraryId> <query> — Injects official markdown API docs into context. Example: docs /vercel/next.js middleware
+[TOOL] ~/.config/fetch/plugins/mcp/mcp_client.py docs ---> context7, get docs
+# Firecrawl Scrape: scrape <url> — Bypasses JS/anti-bot to extract clean markdown. Example: scrape https://react.dev/reference/react
+[TOOL] ~/.config/fetch/plugins/mcp/mcp_client.py scrape ---> firecrawl scrape
+# Firecrawl Search: search <query> — Web search + markdown extraction in 1 step. Example: search llama.cpp metal performance
+[TOOL] ~/.config/fetch/plugins/mcp/mcp_client.py search ---> firecrawl search
 ```
 
-## 2. Workspace Initializers & Bridges
+## 4. Apps (Tools & Utilities)
 
 ```properties
-# --- OpenCode Direct Terminal Launcher ---
-# ~/.config/fetch/tools/subsec/opencode-bridge/opencode-bridge ---> opencode bridge, bridge, ocb
-# --- Odysseus Direct Terminal Launcher ---
-# ~/.config/fetch/tools/subsec/odysseus-bridge/odysseus-bridge ---> odysseus bridge, bridge, ody, odb
-# --- Hermes Direct Browser Workspace Launcher ---
-# ~/.config/fetch/tools/subsec/hermes-bridge/hermes-bridge ---> hermes bridge, bridge, hmb, herm
-```
-
-## 3. System Prompts & Role Injections (Skills)
-
-```properties
-# [TOOL] cat ~/.config/fetch/skills/identity/business/mybiz.md --leaf ---> mybiz, show business profile, view mybiz
-```
-
-## 4. Static Aliases & Shell Shortcuts
-
-```properties
-# --- Email Automation & Secure Alert Dispatcher ---
-[TOOL] ~/.config/local-ai/tools/email/email-agent ---> email agent
-
-# --- Fetch Agent Blueprint (CheatSheet) ---
-~/.config/fetch/tools/blueprint --s --leaf ---> cheatsheet, bp, cs, blueprint
-
-# --- AI-Generated Git Commits ---
+# --- Index Map ---
+[TOOL] ~/.config/fetch/tools/index-map/index-map --cat ---> index map, imap
+# --- eval-agent (HumanEval Benchmark) ---
+~/.config/fetch/tools/evals/eval-agent ---> eval-agent, eval agent
+# --- Weather ---
+[TOOL] curl -s "wttr.in/?format=3" --cat ---> weather simple, get weather
+[TOOL] curl -s wttr.in --cat ---> weather full, get weather
+# --- Time & Date ---
+[TOOL] date "+Current System Date, Time: %-I %M %p on %A, %B %-d, %Y" ---> get date, get time
+# --- APPS Stopwatch ---
+~/.config/fetch/tools/subsec/apps/stopwatch/stopwatch.py ---> stopwatch app
+# --- APPS Media ---
+~/.config/fetch/tools/subsec/apps/media/media.py ---> tuiamp app, tuiamp
+# --- Email TUI ---
+~/.config/fetch/tools/email/email-agent ---> email agent
+# --- AI Commit ---
 ~/.config/fetch/tools/agentic/system/ai-commit ---> ai-commit, gc, git commit
-
-# --- Index-Map (Graph-Enabled Code Intelligence Engine) ---
-[TOOL] ~/.config/fetch/tools/map/index-map --cat ---> index map, imap
+# --- Hyprland State ---
+~/.config/fetch/tools/subsec/hyprstate/work ---> hyprstate work, hyprwork
+~/.config/fetch/tools/subsec/hyprstate/gitcom ---> hyprstate gitcom, gitcom
 ```
 
-## 5. TUI (Terminal User Interface) Programs
+## 5 System & Health
 
 ```properties
-# --- Dynamic Fetch Model Select TUI  ---
-~/.config/fetch/modules/model-select.py ---> model select, model selector, model selection, mst
-
-# --- Ai-Prompt-Writer-Image - Interactive TUI Console ---
-# [TOOL] ~/.config/fetch/tools/subsec/prompt/ai-prompt-writer-image --cat ---> prompt writer image, image prompt, ip
-# --- Ai-Prompt-Writer - Interactive TUI Console ---
-# [TOOL] ~/.config/fetch/tools/subsec/prompt/ai-prompt-writer --cat ---> prompt writer, prompt
-
-# --- Fusion-Research Engine (Compound MoA / Self-Fusion) ---
-# ~/.config/fetch/tools/agentic/fusion/f_research -r ---> fusion research, fusion, fr, deep research
-# --- AI Deep Research TUI ---
-# ~/.config/fetch/tools/subsec/research-tui/deep-research ---> deep research, research, dr
-
-# --- Custom TUI Applications ---
-~/.config/fetch/tools/subsec/basepage-tui/basepage.py ---> basepage, base, basepage tui, rss
-~/.config/fetch/tools/subsec/basepage-tui/basetracker.py ---> basetracker, base, basetracker tui
-
-# --- Media & Volume Controllers (Pure Reactive) ---
-~/.config/fetch/tools/subsec/media/media.py ---> tuiamp, winamp, media
-
-# --- Article & YouTube Summarizers ---
-~/.config/fetch/tools/subsec/ai-summary/llmsum.py ---> llmsum, ytsum, summary, sum
-
-# --- Fetch Tablet Voice Bridge ---
-# ~/.config/fetch/tools/subsec/voice/voice-query ---> voice, voice query, voice bridge
-```
-
-## 6. Graphical Applications & Webapps
-
-```properties
-# --- System App Launcher (Ultra-Light Rofi-TUI) ---
-~/.config/fetch/tools/subsec/app-launcher/app-launcher.py ---> app launcher, app
-
-# --- Native Webapp Wrappers & Browsers ---
-omarchy-launch-webapp https://music.youtube.com/ ---> youtube music, yt, music, youtube
-nohup uwsm app -- brave-origin --user-data-dir="~/.config/BraveSoftware/brave-spotify-bunker" --app=https://open.spotify.com/ >/dev/null 2>&1 & ---> spotify music, spotify, music
-```
-
-## 7. Subsection Applications
-
-```properties
-# --- Stopwatch ---
-~/.config/fetch/tools/subsec/stopwatch/stopwatch.py ---> stopwatch py, sw, stopwatch
-~/.config/fetch/tools/subsec/stopwatch/stopwatch.sh ---> stopwatch sh, sw, stopwatch
-
-# --- Notes ---
-~/.config/fetch/tools/subsec/notes/notes.sh ---> notes, open notes, add to notes
-
-# --- State & Workflow Management ---
-~/.config/fetch/tools/subsec/hyprstate/work ---> hyprstate work, work, hs, hyprstate
-~/.config/fetch/tools/subsec/hyprstate/gitcom ---> hyprstate gitcom, gitcom, gcom, hs, hyprstate
-```
-
-## 8. Testing (Concepts & Prototypes)
-```properties
-# --- Pixel-Browse - Headless Visual Web Ingestion (((wip))) ---
-[TOOL] ~/.config/fetch/tools/subsec/headless-chromium/pixel-browse --cat ---> pixel browse, headless, chromium, pixel browser
-
-# --- Coding-Triangle-Loop - Interactive TUI Console (((wip))) ---
-# [TOOL] ~/.config/fetch/tools/agentic/coding/coding-triangle-loop --cat ---> coding loop, coding, triangle, loop
+# --- System Profile ---
+[TOOL] cat ~/.config/fetch/skills/system/mysys.md ---> mysys
+[TOOL] ~/.config/fetch/tools/generate-profile ---> generate profile, genp
+# --- System Health ---
+[TOOL] ~/.config/fetch/tools/agentic/system/system-health ---> system health, sysh
+# --- Log Checker ---
+[TOOL] ~/.config/fetch/tools/agentic/system/log-checker ---> log checker, ailog
+# --- AUR Audit ---
+[TOOL] ~/.config/fetch/tools/agentic/system/aur-audit ---> aur audit, audit package
+# --- Security Audit ---
+[TOOL] ~/.config/fetch/tools/agentic/system/security-audit ---> security audit, secaud
+# --- System Optimizer ---
+[TOOL] ~/.config/fetch/tools/agentic/system/system-optimizer ---> system optimizer, sysop
+# --- Update Inspector ---
+[TOOL] ~/.config/fetch/tools/agentic/system/update-inspector ---> update inspector
 ```

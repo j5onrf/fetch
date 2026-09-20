@@ -1,117 +1,154 @@
-# File: ~/.config/fetch/modules/agent_cloud.py
+#!/usr/bin/env python3
+"""Dynamic Cloud Cascade Engine - Top-down .env provider API priority with infinite CUSTOM* support [Production Ready]"""
+
 import os
+import re
+from typing import Any
 
-def get_active_configs(messages: list) -> list:
-    """Compiles active cloud API configurations, mapping payloads to provider-specific schemas.
-    
-    Returns a list of tuples: (url, headers, body, timeout)
-    """
-    configs = []
+ENV_PATH: str = os.path.expanduser("~/.config/fetch/.env")
+RE_ENV_API_KEY: re.Pattern = re.compile(
+    r"^([A-Z0-9_]+(?:_API)?_KEY)\s*=\s*[\"']?(.*?)[\"']?$"
+)
 
-    # 1. Google Gemini API (via OpenAI-compatibility Endpoint)
-    gemini_key = os.environ.get("GEMINI_API_KEY")
-    if gemini_key:
-        gemini_model = os.environ.get("GEMINI_MODEL", os.environ.get("CLOUD_MODEL", "gemini-3.1-flash-lite"))
-        body = {
-            "model": gemini_model,
-            "messages": messages,
-            "stream": True
-        }
-        headers = {"Authorization": f"Bearer {gemini_key}"}
-        configs.append((
-            "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
-            headers,
-            body,
-            30
-        ))
+FALLBACK_MODELS = {
+    "gemini": "gemini-3.8-flash",
+    "openrouter": "openrouter/free",
+    "deepseek": "deepseek-chat",
+    "openai": "gpt-4o",
+    "custom": "Qwen/Qwen3.8-27B",
+}
 
-    # 2. OpenAI Subscription API (Supporting gpt-5.5)
-    openai_key = os.environ.get("OPENAI_API_KEY")
-    if openai_key:
-        openai_model = os.environ.get("OPENAI_MODEL", os.environ.get("CLOUD_MODEL", "gpt-5.5"))
-        body = {
-            "model": openai_model,
-            "messages": messages,
-            "stream": True
-        }
-        headers = {"Authorization": f"Bearer {openai_key}"}
-        configs.append((
-            "https://api.openai.com/v1/chat/completions",
-            headers,
-            body,
-            30
-        ))
 
-    # 3. Anthropic Claude Subscription API (Supporting claude-fable-5)
-    claude_key = os.environ.get("CLAUDE_API_KEY")
-    if claude_key:
-        claude_model = os.environ.get("CLAUDE_MODEL", os.environ.get("CLOUD_MODEL", "claude-fable-5"))
-        
-        # Format messages for Anthropic (Extract System instructions to top-level key)
-        claude_messages = []
-        system_prompt = None
-        for m in messages:
-            if m.get("role") == "system":
-                system_prompt = m.get("content")
-            else:
-                claude_messages.append({"role": m.get("role"), "content": m.get("content")})
-        
-        body = {
-            "model": claude_model,
-            "messages": claude_messages,
-            "stream": True,
-            "max_tokens": 4096
-        }
-        if system_prompt:
-            body["system"] = system_prompt
-            
-        headers = {
-            "x-api-key": claude_key,
-            "anthropic-version": "2023-06-01"
-        }
-        configs.append((
-            "https://api.anthropic.com/v1/messages",
-            headers,
-            body,
-            30
-        ))
+def _is_valid_key(val: str) -> bool:
+    v = val.strip().strip("'\"")
+    if not v:
+        return False
+    if v.lower() == "not-needed":
+        return True
+    return not any(sub in v.lower() for sub in ("your", "here", "api-key"))
 
-    # 4. x.AI Grok Subscription API (Supporting grok-4.5)
-    xai_key = os.environ.get("XAI_API_KEY")
-    if xai_key:
-        xai_model = os.environ.get("XAI_MODEL", os.environ.get("CLOUD_MODEL", "grok-4.5"))
-        body = {
-            "model": xai_model,
-            "messages": messages,
-            "stream": True
-        }
-        headers = {"Authorization": f"Bearer {xai_key}"}
-        configs.append((
-            "https://api.x.ai/v1/chat/completions",
-            headers,
-            body,
-            30
-        ))
 
-    # 5. OpenRouter API Configurations
-    openrouter_key = os.environ.get("OPENROUTER_API_KEY")
-    if openrouter_key:
-        openrouter_model = os.environ.get("OPENROUTER_MODEL", "openrouter/free")
-        body = {
-            "model": openrouter_model,
-            "messages": messages,
-            "stream": True,
-            "usage": {"include": True}
-        }
-        headers = {
-            "Authorization": f"Bearer {openrouter_key}",
-            "HTTP-Referer": "https://github.com/j5onrf/fetch"
-        }
-        configs.append((
-            "https://openrouter.ai/api/v1/chat/completions",
-            headers,
-            body,
-            180
-        ))
+def get_active_configs(
+    messages: list[dict[str, Any]],
+) -> list[tuple[str, dict[str, str], dict[str, Any], int]]:
+    """Compiles all active cloud API configurations in a single pass top-down scan."""
+    configs: list[tuple[str, dict[str, str], dict[str, Any], int]] = []
+    if not os.path.exists(ENV_PATH):
+        return configs
+
+    env_vars: dict[str, str] = {}
+    ordered_keys: list[tuple[str, str]] = []
+
+    # Single-pass read: parse all variables and preserve top-down priority ordering
+    try:
+        with open(ENV_PATH, "r", encoding="utf-8") as f:
+            for line in f:
+                line_clean = line.strip()
+                if not line_clean or line_clean.startswith("#"):
+                    continue
+
+                # Strip trailing inline comments: KEY="val" # comment -> KEY="val"
+                line_no_comment = re.sub(r"\s+#.*$", "", line_clean).strip()
+                if "=" in line_no_comment:
+                    k, v = line_no_comment.replace("export ", "", 1).split("=", 1)
+                    k_str = k.strip()
+                    v_str = v.strip().strip('"').strip("'")
+                    env_vars[k_str] = v_str
+
+                    if match := RE_ENV_API_KEY.match(line_no_comment):
+                        key_name, key_val = match.groups()
+                        val_clean = key_val.strip().strip('"').strip("'")
+                        if _is_valid_key(val_clean):
+                            ordered_keys.append((key_name, val_clean))
+    except OSError:
+        return configs
+
+    # Resolve endpoints matching the exact top-down priority
+    for key_name, val_clean in ordered_keys:
+        # 1. Custom Matcher: CUSTOM_API_KEY, CUSTOM2_KEY, CUSTOM_GROQ_API_KEY, etc.
+        if m_custom := re.match(r"^(CUSTOM[0-9A-Z_]*?)(?:_API)?_KEY$", key_name):
+            prefix = m_custom.group(1)
+            url = (
+                env_vars.get(f"{prefix}_URL")
+                or os.environ.get(f"{prefix}_URL")
+                or "https://router.huggingface.co/v1/chat/completions"
+            )
+            model = (
+                env_vars.get(f"{prefix}_MODEL")
+                or os.environ.get(f"{prefix}_MODEL")
+                or FALLBACK_MODELS["custom"]
+            )
+            headers = {"Content-Type": "application/json"}
+            if val_clean.lower() != "not-needed":
+                headers["Authorization"] = f"Bearer {val_clean}"
+            body = {"model": model, "messages": messages, "stream": True}
+            configs.append((url, headers, body, 180))
+
+        # 2. Google Gemini
+        elif key_name in ("GEMINI_API_KEY", "GEMINI_KEY"):
+            model = (
+                env_vars.get("GEMINI_MODEL")
+                or os.environ.get("GEMINI_MODEL")
+                or FALLBACK_MODELS["gemini"]
+            )
+            url = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+            headers = {
+                "Authorization": f"Bearer {val_clean}",
+                "x-goog-api-key": val_clean,
+                "Content-Type": "application/json",
+            }
+            body = {"model": model, "messages": messages, "stream": True}
+            configs.append((url, headers, body, 45))
+
+        # 3. OpenRouter
+        elif key_name in ("OPENROUTER_API_KEY", "OPENROUTER_KEY"):
+            model = (
+                env_vars.get("OPENROUTER_MODEL")
+                or os.environ.get("OPENROUTER_MODEL")
+                or FALLBACK_MODELS["openrouter"]
+            )
+            url = "https://openrouter.ai/api/v1/chat/completions"
+            headers = {
+                "Authorization": f"Bearer {val_clean}",
+                "HTTP-Referer": "https://github.com/j5onrf/py-agent",
+                "Content-Type": "application/json",
+            }
+            body = {
+                "model": model,
+                "messages": messages,
+                "stream": True,
+                "usage": {"include": True},
+            }
+            configs.append((url, headers, body, 180))
+
+        # 4. DeepSeek Direct
+        elif key_name in ("DEEPSEEK_API_KEY", "DEEPSEEK_KEY"):
+            model = (
+                env_vars.get("DEEPSEEK_MODEL")
+                or os.environ.get("DEEPSEEK_MODEL")
+                or FALLBACK_MODELS["deepseek"]
+            )
+            url = "https://api.deepseek.com/chat/completions"
+            headers = {
+                "Authorization": f"Bearer {val_clean}",
+                "Content-Type": "application/json",
+            }
+            body = {"model": model, "messages": messages, "stream": True}
+            configs.append((url, headers, body, 180))
+
+        # 5. OpenAI Direct
+        elif key_name in ("OPENAI_API_KEY", "OPENAI_KEY"):
+            model = (
+                env_vars.get("OPENAI_MODEL")
+                or os.environ.get("OPENAI_MODEL")
+                or FALLBACK_MODELS["openai"]
+            )
+            url = "https://api.openai.com/v1/chat/completions"
+            headers = {
+                "Authorization": f"Bearer {val_clean}",
+                "Content-Type": "application/json",
+            }
+            body = {"model": model, "messages": messages, "stream": True}
+            configs.append((url, headers, body, 120))
 
     return configs

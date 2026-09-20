@@ -1,288 +1,287 @@
+<div align="center">
+
+> **Fetch** is a zero-latency, local-first CLI software robot agent for system control, autonomous coding, and tool automation.
+>
+> * **`<0.1ms` Shortcut Triage:** Instant keyword and slash-command interception.
+> * **`~5ms` On-Device Routing:** Dispatches natural phrasing to local tools and MCP servers.
+> * **Dual-Track Synthesis:** Seamless execution across local MoE models and cloud fallbacks.
+
+</div>
+
+<br>
+
 <p align="center">
   <img alt="Fetch Agent" src="https://github.com/j5onrf/fetch/blob/main/logo.svg" width="250" />
 </p>
 
-<h1 align="center">Fetch <kbd>v0.9.2.2-beta</kbd></h1>
+  <p>
+    <a href="https://github.com/j5onrf/py-agent"><img src="https://shieldcn.dev/badge/version-v0.9.9.35.svg?variant=secondary" alt="Version"></a>
+    <a href="https://github.com/j5onrf/py-agent"><img src="https://shieldcn.dev/badge/Python.svg?variant=branded&brand=python" alt="Language"></a>
+    <a href="https://github.com/j5onrf/py-agent"><img src="https://shieldcn.dev/badge/C%2B%2B.svg?variant=branded&brand=cplusplus" alt="C++"></a>
+    <a href="https://github.com/j5onrf/py-agent/blob/main/LICENSE"><img src="https://shieldcn.dev/badge/license-MIT-green.svg" alt="License"></a>
+    <a href="https://shieldcn.dev/badge/status-beta-blue.svg"><img src="https://shieldcn.dev/badge/status-beta-blue.svg" alt="Status"></a>
+  </p>
 
-<p align="center">
-  <img src="https://img.shields.io/github/last-commit/j5onrf/fetch?style=for-the-badge&labelColor=1f1f1f&color=8dbdff" alt="Last Commit">
-  <img src="https://img.shields.io/badge/language-python-a3be8c?style=for-the-badge&labelColor=1f1f1f" alt="Language">
-  <img src="https://img.shields.io/github/repo-size/j5onrf/fetch?style=for-the-badge&labelColor=1f1f1f&color=d6b4e0" alt="Repo Size">
-</p>
+  <p>
+    <code>gguf</code> &nbsp;•&nbsp; <code>llama.cpp</code> &nbsp;•&nbsp; <code>gemini</code> &nbsp;•&nbsp; <code>huggingface</code> &nbsp;•&nbsp; <code>openrouter</code>
+  </p>
 
-<p align="center">
-  <code>agentic-tool-calls</code> &nbsp; <code>node: .json</code> &nbsp; <code>core: onnx</code>
-</p>
+  <p>
+    <b>Lightweight Python orchestration (<code>rich</code> + <code>requests</code>) driving a high-throughput C++ <code>llama-server</code> backend.</b><br>
+    <sub>Stateful in-memory Python batching (<code>/py</code>), self-healing tool adapters (<code>/adp</code>), and sub-millisecond local execution.</sub>
+  </p>
 
----
+  <br>
 
-<h2 align="center">Project Roadmap</h2>
+  <table>
+    <tr>
+      <td align="center" width="50%" valign="top">
+        <h3>Sub-27B Compact (SLM)</h3>
+        <p><sub>Ultra-fast tool calling, shell triage & single-turn code edits</sub></p>
+        <code>Ling-3.0-tiny*</code> &nbsp;•&nbsp; <code>LFM2.5-8B</code><br>
+        <code>MiniCPM5-2B</code> &nbsp;•&nbsp; <code>Qwen3.5-2B+</code>
+      </td>
+      <td align="center" width="50%" valign="top">
+        <h3>27B+ Autonomous (LLM)</h3>
+        <p><sub>Deep reasoning, multi-file refactoring & recursive sub-agents</sub></p>
+        <code>Occamy-1.0*</code> &nbsp;•&nbsp; <code>Nex-N2.5-mini</code><br>
+        <code>KAT-Coder-V2.5</code> &nbsp;•&nbsp; <code>Qwen3.8-27B</code><br>
+        <code>Qwen3.6-35B</code> &nbsp;•&nbsp; <code>Ornith/Tiel</code><br>
+        <code>Qwen3.8-Flash-Next</code> &nbsp;•&nbsp; <code>DeepSeek&#8209;V4.1</code>
+      </td>
+    </tr>
+  </table>
+  
+  <p>
+    <sub>* Recommended benchmark baselines &nbsp;•&nbsp; Run <code>model select</code> in your terminal to switch models</sub>
+  </p>
 
-Our vision is to transform **Fetch** into a highly responsive, zero-latency, cross-platform stationary software robot agent. Rather than memorizing complex CLI flags, users can naturally command their system using direct slash-commands, semantic text, or local voice triggers.
-
-Below is our phased engineering plan:
-
-<h3 align="center">Phase 1: Consolidated Configuration & Hybrid Routing Core</h3>
-
-*   **Unified Schema Registry**: Consolidate `ai-context.md` and standard prompts into a single, machine-readable `tools.json`. Each tool will register its standard OpenAPI function schema (for the LLM) alongside a private execution template (for local terminal execution).
-*   **Dual-Engine Triage Router**: Implement a hybrid execution path in `ai-agent.py`:
-    *   *Deterministic Jaccard Matching*: Instantly intercept slash-commands and exact keyword shortcuts at `<0.1ms` latency.
-    *   *Cactus Needle (26M SAN)*: Route natural, complex phrasing on-device at `~5ms` latency using a quantized, local 14MB ONNX runtime.
-*   **Fail-Safe Conversational Fallback**: Establish a clean delegation pattern. When local routing returns no matched tools, seamlessly forward the context to your conversational baseline (`gemini-3.1-flash-lite` or Qwen-35B).
-
-<h3 align="center">Phase 2: Synthetic Data Generation & Local Fine-Tuning</h3>
-
-*   **Converse-to-Command Datasets**: Synthesize thousands of diverse, natural-language training examples (utilizing frontier models as teachers) matching the specific administration tools of `Fetch`.
-*   **Needle Gating Fine-Tuning**: Fine-tune Cactus Needle's 26M attention weights locally (via CLI/Playground). Train the model to naturally isolate trigger patterns (e.g., *"Fetch, scan me drive"* vs *"Hey Fetch, can you..."*) and reliably populate JSON argument structures.
-*   **Robustness Evaluation**: Build local evaluation validation datasets to verify routing accuracy, eliminating false positive command executions.
-
-<h3 align="center">Phase 3: OS Independence & Native Standalone Packaging</h3>
-
-*   **Cross-Platform Script Abstraction**: Abstract system administration bash scripts into OS-aware execution pipelines, preparing `Fetch` to run natively on Linux, macOS, and eventually Windows.
-*   **Standalone Binary Compilations**: Package the entire Python environment, dependencies, and the quantized 14MB routing model into a single, zero-dependency native binary executable.
-
-<h3 align="center">Phase 4: Local Voice Layer (Offline Robot Ambient Feel)</h3>
-
-*   **Offline Speech-to-Text (STT)**: Integrate a lightweight local speech transcriber.
-*   **Ultra-Fast Text-to-Speech (TTS)**: Hook up highly efficient local speech synthesis (like `koko`) to allow the agent to talk back with negligible audio generation latency.
-*   **Voice Trigger Hook**: Establish an ambient system-level hotkey or wake-word listener to summon `Fetch` instantly without terminal typing.
-
-<h3 align="center">Phase 5: Self-Correcting Syntactic Guardrails</h3>
-
-*   **Abstract Syntax Tree (AST) Verification**: Run local background compilers in Python to verify code structures generated by smaller models (like Qwen-2B) before outputting to the console.
-*   **Auto-Repair Turn**: If a syntax or indentation error is detected, automatically run a silent background patch turn to correct the code block dynamically.
-
----
-
-<h2 align="center">How it Works</h2>
-
-All configurations and custom shortcuts are managed in [`ai-context.md`](ai-context.md).
-
-*   **Direct (No Session)**: Sub-millisecond Jaccard matching (`jaccard_search`) instantly routes custom keywords to your local terminal.
-*   **Single-Turn Agent (`ai <query>`):** Returns a single response directly to your shell prompt without loading an active conversation.
-*   **Multi-Turn Chat (`ai` alone):** Starts a persistent terminal session with multi-turn context tracking.
-*   **Workspace Agents (`ai init <path>`):** Indexes your directory into a lightweight codebase graph and boots up a codebase-aware chat.
-
-<div align="center">
-  <details>
-    <summary style="cursor: pointer; color: #94A3B8; outline: none;">
-      <i>Click to expand ecosystem diagram</i>
-      <br />
-    </summary>
-    <br />
-    <img alt="Fetch Agent Banner" src="https://github.com/user-attachments/assets/56fe2b60-0cbe-4f51-bc27-a35516f1088f" width="800" style="border-radius: 8px;" />
-  </details>
+  <p>
+    <sub><b>Cloud & Community Spaces:</b> Official <a href="https://huggingface.co">Hugging Face Router</a> endpoints<br>(<a href="https://huggingface.co/deepseek-ai/DeepSeek-V4.1-Flash"><code>DeepSeek-V4.1-Flash</code></a>, <a href="https://huggingface.co/zai-org/GLM-5.3-Flash"><code>GLM-5.3-Flash</code></a>, <a href="https://huggingface.co/inclusionAI/Ling-3.0-flash-VL"><code>Ling-3.0-flash-VL</code></a>, and <a href="https://huggingface.co/moonshotai/Kimi-K3"><code>Kimi-K3</code></a>).</sub>
+  </p>
 </div>
 
----
+<br>
 
-<h2 align="center">CLI Launch Interface</h2>
+---
 
 ```console
-╭──────────────────────────────────────────────╮
-│  >_ Fetch Robotics                           │
-│                                              │
-│  model:     Qwen3.6-35B-A3B.gguf             │
-│  directory: ...-ai/projects/session-test     │
-│  skill:     init codef                       │
-│  database:  active (3 facts, 109 turns)      │
-╰──────────────────────────────────────────────╯
-[sys] Startup context: 210 tokens | Ctrl+C to exit.
+~ ❯ ai
+╭─  Py Agent  ─────────────╮
+│     model:  Occamy-1.0   │
+│ directory:  ~            │
+│   profile:  chat         │
+│  database:  stateless    │
+╰───────── Ctrl+C to exit ─╯
 
-Agent: Workspace loaded. Awaiting instructions.
-❯
+❯ █
 ```
 
+<div align="center">
+  <p><sub>Customize box themes with <code>/box [1-8]</code>. For detailed workflows, read the <a href="projects/Readme.md"><b>Workspace Manual</b></a>.</sub></p>
+</div>
+
+<br>
+
 ---
 
-<h2 align="center">Temporal Personality Memory (TPM)</h2>
+<h2 align="center">Execution Surfaces</h2>
+
+<div align="center">
+
+| Command | Mode | Operational Scope |
+| :--- | :---: | :---: |
+| `[query]` | **Shell Intercept** | Intent matching via [`ai-context.md`](ai-context.md) |
+| `ai "<query>"` | **Single Query** | Instant prompt execution response |
+| `ai` | **Interactive Chat** | Multi-turn chat session |
+| `ai init [path]` | **Workspace Agent** | Autonomous project session |
+
+</div>
 
 <p align="center">
-  <em>Evolving with your workspace, learning your habits, and standardizing your identity.</em>
+  <sub><b>Session Hotkeys:</b> <code>/com</code> compact &nbsp;•&nbsp; <code>/adp</code> adapters &nbsp;•&nbsp; <code>/py</code> iPython &nbsp;•&nbsp; <code>/gnd</code> grounding &nbsp;•&nbsp; <code>/hs</code> hindsite </sub>
 </p>
 
-* [Weaviate Engram](https://github.com/weaviate/engram-python-sdk)'s active reconciliation concepts with [Noema](https://github.com/Fail-Safe/Noema)'s local Markdown file system.
+<br>
 
 ---
 
-<h2 align="center">Codebase Graph Mapper & Relational Index</h2>
+<h2 align="center">Runtime Architecture</h2>
+
+* **Hardened Containment:** Non-bypassable `[y/N]` confirmation gates for system commands (`sudo`, `pacman`, `pip`, `systemctl`) and out-of-bounds file access even in YOLO mode.
+* **Git-Native & Global Memory:** Global system instructions (`skills/system_instructions.md`) and workspace directives (`.agent/memory/*.md`). Human-editable.
+* **Self-Healing Adapters (`/adp`):** Out-of-band argument normalizer repairing malformed JSON and bracket syntax on small models. Opt-in.
+* **Deterministic Diffing:** 3-stage resilient replacement (`Exact` &rarr; `Whitespace` &rarr; `88% Fuzzy`) verified by Python AST syntax guards to eliminate corruption.
+
+<br>
+
+---
+
+<h2 align="center">Benchmark & Efficiency</h2>
 
 <p align="center">
-  <em>Building semantic codebase maps and queryable relational graphs.</em>
+  <sub>Synthesizing battle-tested patterns from <b>Pi</b> (3-zone context compaction), <b>SmallCoder</b> (resilient 3-stage AST diffs),<br>
+  <b>Unsloth AI</b> (out-of-band schema healing), and <b>OKF</b> (git-native persistent memory).</sub>
 </p>
 
-* [Graphify](https://github.com/Graphify-Labs/graphify)'s codebase mapping and [codebase-memory-mcp](https://github.com/DeusData/codebase-memory-mcp)'s relational queries, supercharged with local semantic vector search via [sqlite-vec](https://github.com/asg017/sqlite-vec).
+<div align="center">
+
+| Sub-27B Challenge | Without Adapters | With `/adp` Active |
+| :--- | :---: | :---: |
+| **AG-03 (Surgical Edit & Test)** | 16 turns | **6 turns** |
+| **AG-07 (In-Memory Batch Loop)** | 14 turns | **2 turns** |
+| **Full Suite Pass Rate** | Retries / Failures | **100% (7/7)** |
+
+<br>
+
+| Operational Tier | Py-Agent | DeepSeek (`dsh`) |
+| :--- | :---: | :---: |
+| **Pure Chat** | **211 tokens** (`ai`) | ~450+ tokens |
+| **Native Core** | **~680 tokens** (`SMOL_TOOLS`) | ~632 tokens |
+| **Dual Mode** | **~760 tokens** (`python + native`) | ~1,200+ tokens |
+| **Full Graph** | **~1,100 tokens** (11 tools + AST) | 2,500–4,000+ tokens |
+| **Idle Overhead** | **0% CPU / 0 MB RAM** | Node.js Active |
+
+</div>
+
+<br>
 
 ---
 
-<h2 align="center">System Administration & Diagnostics</h2>
+<h2 align="center">Client Surfaces & Environments</h2>
 
 <p align="center">
-  <em>Inspecting package updates, monitoring system health, and optimizing performance.</em>
+  Py-Agent is surface-agnostic. Switch seamlessly between terminal, web gateway, and desktop IDE:
 </p>
 
-* [log-checker](/tools/agentic/system/log-checker) and [system-health](/tools/agentic/system/system-health) live diagnostics with [aur-audit](/tools/agentic/system/aur-audit), [security-audit](/tools/agentic/system/security-audit), [update-inspector](/tools/agentic/system/update-inspector) zero-trust auditing, [system-optimizer](/tools/agentic/system/system-optimizer) resource adjustments, [ai-status](/tools/agentic/system/ai-status) routing, and [ai-commit](/tools/agentic/system/ai-commit) hooks.
+<div align="center">
+  <table>
+    <tr>
+      <td align="center" width="210" valign="top">
+        <br>
+        <h3><a href="https://github.com/j5onrf/pycode">PyCode IDE</a></h3>
+        <p><code>/pyc</code> · <code>/pyc web</code></p>
+        <sub>Local-first React desktop workspace with ACP JSON-RPC 2.0.</sub>
+        <br><br>
+      </td>
+      <td align="center" width="210" valign="top">
+        <br>
+        <h3>Textual PyTUI</h3>
+        <p><code>/tui</code></p>
+        <sub>Full-screen reactive terminal workspace with <code>uvloop</code>, socket IPC.</sub>
+        <br><br>
+      </td>
+      <td align="center" width="210" valign="top">
+        <br>
+        <h3>llama.cpp WebAgent</h3>
+        <p><code>/webui</code> · <code>/web</code></p>
+        <sub>Autonomous tool reverse proxy for official <code>llama-server</code>.</sub>
+        <br><br>
+      </td>
+    </tr>
+  </table>
+
+  <p>
+    <sub><code>/v</code> Voice-to-Text (<code>:9999</code>) &nbsp;•&nbsp; <code>/tts</code> Neural Kokoro Audio &nbsp;•&nbsp; <code>/pybot</code> Web Assistant</sub>
+  </p>
+</div>
+
+<br>
 
 ---
 
-<h2 align="center">Core Capabilities</h2>
+<h2 align="center">Setup & Installation</h2>
 
-| Core | Capability | Description |
-| :---: | :---: | :--- |
-| **Performance** | **Zero-Daemon** | 0% idle CPU/RAM. `Ultra-light` execution. |
-| **Intelligence** | **Scalability** | Optimized from `Qwen3.5-2B` up to frontier models. |
-| **Resiliency** | **Fallbacks** | `Gemini` → `OpenAI` → `Claude` → `xAI` → `OpenRouter` → `GGUF`. |
-| **Safety** | **Zero-Trust Guardrails** | Intercepts out-of-bounds commands and edits for manual approval. |
-| **Safety** | **Type-Safe Validation** | Enforces [Pydantic AI](https://github.com/pydantic/pydantic-ai)'s schema concepts natively. |
-| **Safety** | **Syntactic Guardrails** | [OpenAI Agents](https://github.com/openai/openai-agents-python)-style self-correcting `.py`/`.json` writes. |
-| **Integration** | **Dynamic Context** | On-demand compilation of system specs and file contents. |
-| **Optimization** | **Token-Slasher** | Custom [`tool`](https://github.com/j5onrf/fetch/tree/main/tools) and [`skill`](https://github.com/j5onrf/fetch/tree/main/skills) integration built for minimal token use. |
-| **Interface** | **Conversational TUI** | Rich, multi-turn chat sessions directly in the terminal. |
-| **Auditability** | **Zero-Dependency** | Under 500 lines of modular, standard-library Python. |
-
----
-
-<h2 align="center">TUI Carousel & Input Controls</h2>
-
-* **`Up` / `Down` Arrow Keys:** Cycle through available ranked selections.
-* **`Enter`:** Execute the highlighted command (or initialize a [workspace](https://github.com/j5onrf/fetch/tree/main/projects) if the selection is a directory path).
-* **`Esc` / `Right Arrow` / `Ctrl+C`:** Cancel/Skip the active menu, memory-recall, or tool authorization prompt cleanly.
-
-```console
-~ ❯ weather
-[01/02] ❯ [weather full] curl -s wttr.in | cat
-:: ↵ run  Esc:
-```
-
----
-
-<h2 align="center">Model Select TUI</h2>
-
-<p align="center">
-  <em>Manage your active cloud endpoints, inspect live API rankings, and toggle keys.</em>
-</p>
-
-* Run **`model select`** directly from your terminal to launch the interactive **[Cloud Connection](https://github.com/j5onrf/fetch/tree/main/modules)** TUI.
-
----
-
-<h2 align="center">Command Reference</h2>
-
-### 1. Global Shell Commands
-*Executed directly from your terminal prompt.*
-
-| Command | Description |
-| :--- | :--- |
-| **`ai`** | Launch an interactive, multi-turn chat session. |
-| **`ai <query>`** | Get an instant, one-shot answer, straight back to your shell prompt. |
-| **`ai init <path>`** | Launch (or create) a codebase-aware workspace agent. |
-| **`hs` / `hist`** | Interactively search or view active workspace `history.md`. |
-
-### 2. Active Session Commands
-*Typed directly inside an active chat session.*
-
-| Command | Description |
-| :--- | :--- |
-| **`/skill <query>`** *(or `/s`)* | Search and load dynamic specialist skills. |
-| **`view file <path>`** *(or `read`)* | Dynamically read local files directly into your model context. |
-| **`-save <tag>` / `-load`** | Save active states or rollback/clone snapshots (with Global Handoff). |
-| **`/f`** / **`/t`** / **`/b`** / **`/a`** | Trigger prompt-generating subroutines: Follow-up, Thinking, Brainstorm, or All. |
-
-### 3. Modular Toggle & Diagnostic Switches
-*Typed inside an active chat session to adjust settings.*
-
-| Command | Description |
-| :--- | :--- |
-| **`/clear`** / **`/reset`** | **Reset** Session context, local chat history, and the SQLite TPM table. |
-| **`/spell`** / **`/sp`** | **Toggle** the context-aware grammar & spellchecker ON/OFF. |
-| **`/g`** | **Toggle** workspace confirmation gates ON/OFF (autonomous editing mode). |
-| **`/m`** | **Toggle** long-term memory and TPM reconciliation ON/OFF. |
-| **`/r`** / **`/r <tokens>`** | **Toggle** reasoning ON/OFF. Supports custom limits (default: 500). |
-| **`/stats` / `/tok`** | **Diagnostics**: Toggle real-time speed metrics or view live token usage. |
-
----
-
-<h2 align="center">Agent Blueprint</h2>
-
-Add your shortcuts, commands, and workspaces to [`ai-context.md`](https://github.com/j5onrf/fetch/blob/main/ai-context.md).
-
-```markdown
-# --- Weather & Live Networking ---
-[TOOL] curl -s wttr.in --cat ---> weather full, wttr, weather
-[TOOL] curl -s "wttr.in/?format=3" --cat ---> weather simple, wttr, weather
-
-# --- Fetch Agent Blueprint (CheatSheet) ---
-~/.config/fetch/tools/blueprint --leaf ---> cheatsheet, blueprint, bp, cs
-```
-
----
-
-<h2 align="center">Setup & Prerequisites</h2>
+### 1. Install py-agent
 
 ```bash
-# 1. Optional: Install terminal rendering utilities
-# (mdcat enables beautiful terminal markdown formatting)
-yay -S mdcat
+# 1. Install dependencies (Arch/CachyOS or pip)
+sudo pacman -S python-rich python-requests
 
-# 2. Install required system dependencies (Reduces latency)
-# Debian/Ubuntu: sudo apt install python3-requests
-# macOS / Other: pip install requests
-sudo pacman -S python-requests
+# 2. Clone repository
+git clone https://github.com/j5onrf/py-agent.git ~/.config/fetch
 
-# 2.5 Optional: Install local vector-database extensions
-# (Enables high-performance semantic search over your codebase)
-# Debian/Ubuntu: pip install sqlite-vec --break-system-packages
-# macOS / Other: pip install sqlite-vec
-yay -S python-sqlite-vec
-
-# 3. Clone the repository locally
-git clone https://github.com/j5onrf/fetch.git ~/.config/fetch
-
-# 4. Add the environment hook into Bash & reload your profile
-echo '[ -f "$HOME/.config/fetch/ai-hook.sh" ] && source "$HOME/.config/fetch/ai-hook.sh"' >> ~/.bashrc
+# 3. Register shell hook (bash / zsh)
+echo '[ -f "$HOME/.config/fetch/ai-hook.sh" ] && \
+source "$HOME/.config/fetch/ai-hook.sh"' >> ~/.bashrc
 source ~/.bashrc
-
-# 5. Create your private configuration file (No global exports needed!)
-# Fill in only what you use; the rest defaults safely.
-# The agent reads this dynamically on every run with zero terminal restarts.
-nano ~/.config/fetch/.env
 ```
 
-#### Configuration Example (`.env`):
+### 2. Configure Providers (`.env`)
+
+```bash
+# Option A: Interactive TUI Selector
+model select
+
+# Option B: Manual Configuration
+cp ~/.config/fetch/.env.example ~/.config/fetch/.env
+```
+
+<details>
+<summary><b>📋 View Example <code>(~/.config/fetch/.env.example)</code></b></summary>
+
 ```env
-# ~/.config/fetch/.env
-# use "ai status" and "model select"
+# ==============================================================================
+# Py-Agent Environment Configuration (.env.example)
+#
+# RULES:
+# 1. Top-Down: First uncommented key is active.
+# 2. Toggle: Add '#' to disable; remove '#' to enable.
+# 3. Add More: Define CUSTOM3_*, CUSTOM4_*, etc. anywhere.
+# 4. Fallback: If all keys have '#', routes to local server (:8080).
+# 5. TUI Config: Run 'model select' to configure everything interactively.
+# ==============================================================================
 
-# Claude API
-CLAUDE_API_KEY="your-claude-api-key-here"
-CLAUDE_MODEL="claude-fable-5"
+# ── 1. Custom 1 / Hugging Face Router ─────────────────────────────────────────
+# CUSTOM_API_KEY="hugging-face-api-key"
+CUSTOM_URL="https://router.huggingface.co/v1/chat/completions"
+CUSTOM_MODEL="Qwen/Qwen3.8-27B"
 
-# OpenAI API
-OPENAI_API_KEY="your-openai-api-key-here"
-OPENAI_MODEL="gpt-5.6"
+# ── 2. Custom 2 / Generic Endpoint (DeepSeek, OpenAI, etc.) ───────────────────
+# CUSTOM2_API_KEY="sk-your-key-here"
+CUSTOM2_URL="https://api.deepseek.com/chat/completions"
+CUSTOM2_MODEL="deepseek-chat"
 
-# x.AI Grok API
-XAI_API_KEY="xai-your-grok-api-key-here"
-XAI_MODEL="grok-4.5"
+# ── 3. Google Gemini (Free daily tier via Google AI Studio) ───────────────────
+# GEMINI_API_KEY="AIzaSyYourGeminiApiKeyHere"
+GEMINI_MODEL="gemini-3.5-flash-lite"
 
-# Google Gemini API
-GEMINI_API_KEY="AIzaSyYourFullGeminiApiKeyHere"
-GEMINI_MODEL="gemini-3.1-flash-lite"
-
-# OpenRouter API
-OPENROUTER_API_KEY="sk-or-v1-YourFullOpenRouterKeyHere"
+# ── 4. OpenRouter (Free community models & Universal paid gateway) ────────────
+# OPENROUTER_API_KEY="sk-or-v1-YourOpenRouterKeyHere"
 OPENROUTER_MODEL="openrouter/free"
 
-# Context Limits
-AI_MAX_TOKENS=8192
+# ── Auxiliary Services (Independent Toggles) (Optional) ───────────────────────
+
+# Google Search Grounding (/gnd)
+# GND_KEY="AIzaSyYourGeminiApiKeyHere"
+# GND_MODEL="gemini-2.5-flash"
+
+# Voice Bridge Transcription (Speech-to-Text on :9999)
+# GEM_VOICE="AIzaSyYourGeminiApiKeyHere"
+# GEM_MODEL="gemini-3.5-flash-lite"
+
+# Multimodal Vision OCR (Pre-processor for text-only local models)
+# IMG_VOICE="AIzaSyYourGeminiApiKeyHere"
+# IMG_MODEL="gemini-3.5-flash-lite"
+
+# ── Model Context Protocol (MCP) (Optional) ───────────────────────────────────
+
+# Firecrawl Scrape & Search
+# FIRECRAWL_API_KEY="fc-your-actual-api-key"
+
+# ── Context Window Budget ─────────────────────────────────────────────────────
+AI_MAX_TOKENS="8192"
 ```
+
+</details>
+
+<br>
 
 ---
 
-## Credits
+<h2 align="center">Documentation & License</h2>
 
-*   **Origin**: Based on the foundational [Local-Ai Agent](https://github.com/j5onrf/local-ai) framework.
-*   This application incorporates the [Cactus Needle](https://github.com/cactus-compute/needle) routing model developed by Cactus Compute, which is licensed under the MIT License:
-Copyright (c) 2026 Cactus Compute
-(Standard MIT License)
+* **<a href="projects/Readme.md">Workspace Manual</a>**
+* **<a href="modules/Readme.md">System Architecture</a>**
+* Licensed under the permissive **[MODIFIED MIT LICENSE](LICENSE)**
 

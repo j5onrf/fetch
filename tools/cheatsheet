@@ -1,0 +1,63 @@
+#!/usr/bin/env python3
+"""Cheatsheet - High-Speed Markdown-Native Plugin & Shortcut Map Generator"""
+
+import os
+import re
+import sys
+
+CFG_DIR = os.path.expanduser("~/.config/py-agent")
+CONTEXT_FILE = os.path.join(CFG_DIR, "ai-context.md")
+if not os.path.isfile(CONTEXT_FILE):
+    CONTEXT_FILE = os.path.expanduser("~/.config/local-ai/ai-context.md")
+
+if not os.path.exists(CONTEXT_FILE):
+    sys.stderr.write(f"❌ Error: Context file not found at {CONTEXT_FILE}\n")
+    sys.exit(1)
+
+SECTION_RE = re.compile(r"^##\s*(\d+)\.\s*(.+)$")
+URL_RE = re.compile(r"(https?://\S+)")
+
+print("# ∿ Py-Agent Cheatsheet\n\n| Category | Shortcuts / Triggers | Target Command |\n| :--- | :--- | :--- |")
+
+try:
+    with open(CONTEXT_FILE, "r", encoding="utf-8") as f:
+        lines = f.readlines()
+except OSError as e:
+    sys.stderr.write(f"❌ Error reading file: {e}\n")
+    sys.exit(1)
+
+in_code_block = False
+current_section = "General"
+
+for line in lines:
+    s = line.strip()
+    if s.startswith("```"):
+        in_code_block = not in_code_block
+        continue
+
+    if m := SECTION_RE.match(s):
+        current_section = f"{m.group(1)}. {m.group(2)}"
+        continue
+
+    if not in_code_block or s.startswith("#") or "--->" not in s:
+        continue
+
+    cmd, intents = s.split("--->", 1)
+    cmd = cmd.replace("[TOOL]", "").strip()
+
+    intent_list = [i.strip() for i in intents.split(",") if i.strip()]
+    shortcut_display = " · ".join(f"`{x}`" for x in intent_list[:3])
+
+    if url_match := URL_RE.search(cmd):
+        cleaned_cmd = url_match.group(1).replace('"', "").replace("'", "")
+    else:
+        c_parts = cmd.split()
+        target = os.path.basename(c_parts[0]) + (
+            " " + " ".join(c_parts[1:]) if len(c_parts) > 1 else ""
+        )
+        cleaned_cmd = target[:38] + "..." if len(target) > 40 else target
+
+    clean_target = cleaned_cmd.replace("|", r"\|")
+    print(f"| **{current_section}** | {shortcut_display} | `{clean_target}` |")
+
+print()

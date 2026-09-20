@@ -1,214 +1,482 @@
-# File: ~/.config/fetch/modules/agent_ui.py
+#!/usr/bin/env python3
+"""UI Module - Spinners, session boxes, and interactive menus [Production Ready]"""
+
+import json
 import os
+import re
+import select
+import shutil
 import sys
 import threading
 import time
-import select
-import re
-from typing import Optional, Callable
+import urllib.request as urlreq
+from collections.abc import Callable
+from typing import Any
+
+from rich.box import DOUBLE, HEAVY, HORIZONTALS, ROUNDED, SQUARE, Box
+from rich.console import Console, Group
+from rich.panel import Panel
+from rich.table import Table
+from rich.text import Text
 
 try:
-    import tty
     import termios
+    import tty
+    _HAS_TERMIOS = True
 except ImportError:
-    pass
+    _HAS_TERMIOS = False
+
+CFG_DIR: str = os.path.expanduser("~/.config/fetch")
+_console, _console_err = Console(), Console(stderr=True)
+RE_UNSAFE_SHELL_CHARS: re.Pattern = re.compile(r'[\[\]{}()=\'"",;|<>#]')
+
+BOX_DIAMOND = Box("◈─┬◈\n│ ││\n├─┼┤\n│ ││\n├─┼┤\n├─┼┤\n│ ││\n◈─┴◈\n")
+BOX_DASHED = Box("┌┄┬┐\n┆ ┆┆\n├┄┼┤\n┆ ┆┆\n├┄┼┤\n├┄┼┤\n┆ ┆┆\n└┄┴┘\n")
+
+STYLES = {
+    1: ("Py Agent", ROUNDED, "green", "bold bright_green"),
+    2: ("Py Agent", DOUBLE, "bright_blue", "bold bright_blue"),
+    3: ("Py Agent", SQUARE, "bright_yellow", "bold bright_yellow"),
+    4: ("Py Agent", HEAVY, "bright_cyan", "bold bright_white"),
+    5: ("Py Agent", HORIZONTALS, "dim white", "bold cyan"),
+    6: ("Py Agent", BOX_DIAMOND, "bright_cyan", "bold bright_white"),
+    7: ("Py Agent", BOX_DASHED, "bright_magenta", "bold bright_magenta"),
+}
+
+RICH_TO_ANSI = {
+    "green": "\033[1;32m",
+    "bright_green": "\033[1;92m",
+    "blue": "\033[1;34m",
+    "bright_blue": "\033[1;94m",
+    "yellow": "\033[1;33m",
+    "bright_yellow": "\033[1;93m",
+    "cyan": "\033[1;36m",
+    "bright_cyan": "\033[1;96m",
+    "magenta": "\033[1;35m",
+    "bright_magenta": "\033[1;95m",
+    "dim white": "\033[37m",
+    "white": "\033[1;37m",
+}
+
+_core_module = None
+
 
 class InlineSpinner:
-    """A lightweight, thread-safe on-demand ANSI terminal spinner for CLI operations."""
-    def __init__(self, chars: str = "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"):
-        self.chars: str = chars
-        self.active: bool = False
-        self.thread: Optional[threading.Thread] = None
+    _has_prefilled: bool = False
+
+    def __init__(self, chars: tuple[str, ...] | list[str] | str = ("✦ [∿ · ·]", "✦ [· ∿ ·]", "✦ [· · ∿]", "✦ [· ∿ ·]")) -> None:
+        self.chars = chars
+        self.active = False
+        self.thread = None
+        self.message = "Thinking..."
+        self.start_time = 0.0
+        self._lock = threading.Lock()
+
+    def _get_theme_color(self) -> str:
+        global _core_module
+        try:
+            if _core_module is None:
+                import agent_core
+                _core_module = agent_core
+            box = _core_module.get_state("box_style", 1)
+            border_col = "green" if box == 8 else STYLES.get(box, STYLES[1])[2]
+            return RICH_TO_ANSI.get(border_col, "\033[1;32m")
+        except Exception:
+            return "\033[1;32m"
+
+    def _glimmer(self, text: str, t: float, color: str) -> str:
+        pos = (t * 2.2) % (len(text) + 8) - 4
+        rendered = []
+        for i, ch in enumerate(text):
+            dist = abs(i - pos)
+            if dist < 1.0:
+                rendered.append(f"\033[1;37m{ch}\033[0m")
+            elif dist < 2.5:
+                rendered.append(f"{color}\033[1m{ch}\033[0m")
+            else:
+                rendered.append(f"\033[2m{ch}\033[0m")
+        return "".join(rendered)
 
     def _spin(self) -> None:
-        idx: int = 0
-        char_len: int = len(self.chars)
+        idx, char_len, tick = 0, len(self.chars), 0.0
+        color = self._get_theme_color()
         while self.active:
             try:
-                char = self.chars[idx % char_len]
-                sys.stderr.write(f"\r\033[1;32m{char}\033[0m ")
+                char, elapsed = self.chars[int(idx) % char_len], time.time() - self.start_time
+                with self._lock:
+                    msg = self.message
+                glim_msg = self._glimmer(msg, tick, color)
+                sys.stderr.write(f"\r\x1b[K{color}{char}\033[0m {glim_msg} \033[2m{elapsed:.1f}s\033[0m")
                 sys.stderr.flush()
-            except Exception:
+            except OSError:
                 pass
-            idx += 1
-            time.sleep(0.08)
-        sys.stderr.write("\r\x1b[2K\r")
-        sys.stderr.flush()
+            idx += 0.4
+            tick += 0.25
+            time.sleep(0.05)
+        try:
+            sys.stderr.write("\r\x1b[2K\r")
+            sys.stderr.flush()
+        except OSError:
+            pass
 
-    def start(self) -> None:
-        if not self.active:
-            self.active = True
-            self.thread = threading.Thread(target=self._spin, daemon=True)
-            self.thread.start()
+    def update(self, message: str) -> None:
+        with self._lock:
+            self.message = message
 
-    def stop(self) -> None:
-        if self.active:
+    def start(self, message: str = "Thinking...") -> None:
+        with self._lock:
+            if not InlineSpinner._has_prefilled:
+                self.message = "Prefilling..."
+                InlineSpinner._has_prefilled = True
+            else:
+                self.message = message
+            if not self.active:
+                self.active = True
+                self.start_time = time.time()
+                try:
+                    sys.stderr.write("\033[?25l")
+                    sys.stderr.flush()
+                except OSError:
+                    pass
+                self.thread = threading.Thread(target=self._spin, daemon=True)
+                self.thread.start()
+
+    def stop(self, done_msg: str | None = None, *args: Any, **kwargs: Any) -> None:
+        with self._lock:
+            if not self.active:
+                return
             self.active = False
-            if self.thread:
-                self.thread.join()
-                self.thread = None
+            elapsed = time.time() - self.start_time if getattr(self, "start_time", None) else 0.0
+
+        if self.thread and self.thread.is_alive():
+            self.thread.join(timeout=0.2)
+            self.thread = None
+
+        try:
+            if done_msg:
+                sys.stderr.write(f"\r\x1b[2K\033[1;32mOK\033[0m \033[1;36m{done_msg}\033[0m \033[2m({elapsed:.1f}s)\033[0m\n")
+            else:
+                sys.stderr.write("\r\x1b[2K\r")
+            sys.stderr.write("\033[?25h")
+            sys.stderr.flush()
+        except OSError:
+            pass
+
+
+class CalmBoatSpinner:
+    _last_x: int = 0
+    _last_dir: int = 1
+
+    def __init__(self, tokens_used: int = 0, max_tokens: int = 8192) -> None:
+        self.active = False
+        self.thread = None
+        self.tokens_used = max(1, tokens_used)
+        self.max_tokens = max(1, max_tokens)
+        self._lock = threading.Lock()
+
+    def update_context(self, tokens_used: int, max_tokens: int | None = None) -> None:
+        with self._lock:
+            self.tokens_used = max(1, tokens_used)
+            if max_tokens:
+                self.max_tokens = max(1, max_tokens)
+
+    def update(self, message: str = "") -> None:
+        pass
+
+    def _sail(self) -> None:
+        x = CalmBoatSpinner._last_x
+        direction = CalmBoatSpinner._last_dir
+        w_offset = 0
+        step_timer = time.time()
+        step_interval = 0.88
+
+        try:
+            sys.stderr.write("\n\n\033[2A")
+            sys.stderr.flush()
+        except OSError:
+            pass
+
+        width = 57
+        max_x = width - 6
+
+        while self.active:
+            now = time.time()
+
+            with self._lock:
+                tokens = self.tokens_used
+                max_tok = self.max_tokens
+
+            pct = min(100.0, (tokens / max_tok) * 100.0)
+
+            if x > max_x:
+                x = max_x
+                direction = -1
+
+            if now - step_timer >= step_interval:
+                x += direction
+                if x >= max_x:
+                    x = max_x
+                    direction = -1
+                elif x <= 0:
+                    x = 0
+                    direction = 1
+                CalmBoatSpinner._last_x = x
+                CalmBoatSpinner._last_dir = direction
+                step_timer = now
+
+            sail = "<|" if direction == 1 else "|>"
+            sail_line = (" " * (x + 2)) + f"\033[1;33m{sail}\033[0m"
+
+            water_pattern = ("-~~~" * 16)[w_offset : w_offset + width]
+            left_water = water_pattern[:x]
+            right_water = water_pattern[x + 5 : width]
+            hull = r"\___/"
+
+            w_col = "\033[34m" if pct < 70 else ("\033[33m" if pct < 88 else "\033[31m")
+
+            water_line = (
+                f"{w_col}{left_water}\033[0m"
+                f"\033[1;33m{hull}\033[0m"
+                f"{w_col}{right_water}\033[0m"
+            )
+
+            try:
+                sys.stderr.write(f"\r\x1b[2K{sail_line}\n\r\x1b[2K{water_line}\033[1A")
+                sys.stderr.flush()
+            except OSError:
+                pass
+
+            w_offset = (w_offset + 1) % 4
+            time.sleep(0.12)
+
+    def start(self, message: str = "") -> None:
+        if not sys.stderr.isatty():
+            return
+        with self._lock:
+            if not self.active:
+                self.active = True
+                try:
+                    sys.stderr.write("\033[?25l")
+                    sys.stderr.flush()
+                except OSError:
+                    pass
+                self.thread = threading.Thread(target=self._sail, daemon=True)
+                self.thread.start()
+
+    def stop(self, leave_on_screen: bool = False, *args: Any, **kwargs: Any) -> None:
+        with self._lock:
+            if not self.active:
+                return
+            self.active = False
+            tokens = self.tokens_used
+            max_tok = self.max_tokens
+
+        if self.thread and self.thread.is_alive():
+            self.thread.join(timeout=0.25)
+            self.thread = None
+
+        width = 57
+        pct = min(100.0, (tokens / max_tok) * 100.0)
+
+        if leave_on_screen:
+            dock_x = min(width - 5, max(0, int((pct / 100.0) * (width - 5))))
+
+            sail_line = (" " * (dock_x + 2)) + "\033[1;33m|>\033[0m"
+            water_pattern = ("-~~~" * 16)[:width]
+            left_water = water_pattern[:dock_x]
+            right_water = water_pattern[dock_x + 5 : width]
+            hull = r"\___/"
+
+            w_col = "\033[34m" if pct < 70 else ("\033[33m" if pct < 88 else "\033[31m")
+
+            docked_line = (
+                f"{w_col}{left_water}\033[0m"
+                f"\033[1;33m{hull}\033[0m"
+                f"{w_col}{right_water}\033[0m"
+            )
+
+            try:
+                sys.stderr.write(f"\r\x1b[2K{sail_line}\n\r\x1b[2K{docked_line}\n\n")
+                sys.stderr.write("\033[?25h")
+                sys.stderr.flush()
+            except OSError:
+                pass
+        else:
+            try:
+                sys.stderr.write("\r\x1b[2K\n\r\x1b[2K\033[1A\r")
+                sys.stderr.write("\033[?25h")
+                sys.stderr.flush()
+            except OSError:
+                pass
+
+
+def _read_fd(fd: int) -> str:
+    if not _HAS_TERMIOS:
+        return os.read(fd, 1).decode("utf-8", errors="ignore")
+
+    old = termios.tcgetattr(fd)
+    try:
+        tty.setraw(fd)
+        termios.tcflush(fd, termios.TCIFLUSH)
+        char_bytes = os.read(fd, 1)
+        if not char_bytes:
+            return ""
+        if char_bytes == b"\x03":
+            raise KeyboardInterrupt
+        if char_bytes == b"\x1b" and select.select([fd], [], [], 0.05)[0]:
+            char_bytes += os.read(fd, 2)
+        return char_bytes.decode("utf-8", errors="ignore")
+    finally:
+        termios.tcsetattr(fd, termios.TCSAFLUSH, old)
+        try:
+            sys.stdout.write("\033[0m")
+            sys.stdout.flush()
+        except Exception:
+            pass
+
 
 def get_key() -> str:
-    """Reads a single key or escape sequence from /dev/tty directly or falls back to stdin.
-    
-    Uses read-only access on /dev/tty to ensure compatibility inside piped subprocesses.
-    """
-    try:
-        with open("/dev/tty", "r") as tty_file:
-            fd = tty_file.fileno()
-            old_settings = termios.tcgetattr(fd)
-            try:
-                tty.setraw(fd)
-                termios.tcflush(fd, termios.TCIFLUSH)
-                char_bytes = os.read(fd, 1)
-                if char_bytes == b'\x1b' and select.select([fd], [], [], 0.05)[0]:
-                    char_bytes += os.read(fd, 2)
-                return char_bytes.decode("utf-8", errors="ignore")
-            finally:
-                termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-    except Exception:
-        fd = sys.stdin.fileno()
+    if sys.stdin.isatty():
         try:
-            old_settings = termios.tcgetattr(fd)
-            try:
-                tty.setraw(fd)
-                termios.tcflush(fd, termios.TCIFLUSH)
-                char_bytes = os.read(fd, 1)
-                if char_bytes == b'\x1b' and select.select([fd], [], [], 0.05)[0]:
-                    char_bytes += os.read(fd, 2)
-                return char_bytes.decode("utf-8", errors="ignore")
-            finally:
-                termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+            return _read_fd(sys.stdin.fileno())
         except Exception:
-            try:
-                char_bytes = os.read(fd, 1)
-                return char_bytes.decode("utf-8", errors="ignore")
-            except Exception:
-                return ""
+            pass
+    try:
+        with open("/dev/tty", "r") as f:
+            return _read_fd(f.fileno())
+    except Exception:
+        pass
+    try:
+        return os.read(sys.stdin.fileno(), 1).decode("utf-8", errors="ignore")
+    except Exception:
+        return ""
+
 
 def get_local_model_name() -> str:
-    """Queries the running llama-server to extract the actual loaded GGUF filename."""
-    import urllib.request as urlreq
-    import json
     try:
-        # Standard OpenAI models catalog endpoint in llama-server
-        with urlreq.urlopen("http://localhost:8080/v1/models", timeout=0.5) as r:
-            data = json.loads(r.read().decode("utf-8"))
-            model_path = data["data"][0]["id"]
-            return os.path.basename(model_path)
+        req = urlreq.Request("http://localhost:8080/v1/models", method="GET")
+        with urlreq.urlopen(req, timeout=0.5) as r:
+            return os.path.basename(json.loads(r.read().decode("utf-8"))["data"][0]["id"])
     except Exception:
-        return "local-model"
+        return "model not loaded (offline :8080)"
+
 
 def draw_session_box(
     workspace_path: str,
     home_dir: str,
     is_agent: bool,
     db_turns: int,
-    tpm_count: int,
+    mem_count: int,
     memory_active: bool,
     active_system_prompt: str,
-    clean_name: str
+    clean_name: str,
+    sub_id: int | None = None,
+    box_style: int = 1,
 ) -> None:
-    """Draws a clean system status and information frame in the console."""
-    version = ""
-    main_script_path = os.path.join(home_dir, ".config", "fetch", "ai-agent.py")
-    if os.path.exists(main_script_path):
-        try:
-            with open(main_script_path, "r", encoding="utf-8") as f:
-                for line in f:
-                    match = re.search(r"Fetch Agent\s+(v[0-9.]+)", line, re.I)
-                    if match:
-                        version = match.group(1)
-                        break
-        except Exception:
-            pass
+    display_dir = (
+        workspace_path.replace(home_dir, "~", 1)
+        if workspace_path.startswith(home_dir)
+        else workspace_path
+    )
 
-    display_dir = workspace_path
-    if display_dir.startswith(home_dir):
-        display_dir = display_dir.replace(home_dir, "~", 1)
-    if len(display_dir) > 28:
-        display_dir = "..." + display_dir[-25:]
-
-    gkey = os.environ.get("GEMINI_API_KEY")
-    okey = os.environ.get("OPENROUTER_API_KEY")
-    clakey = os.environ.get("CLAUDE_API_KEY")
-    opakey = os.environ.get("OPENAI_API_KEY")
-
-    # Orderly cascade mapping to determine display model
-    if clakey:
-        model_name = os.environ.get("CLAUDE_MODEL", "claude-fable-5")
-    elif opakey:
-        model_name = os.environ.get("OPENAI_MODEL", "gpt-5.5")
-    elif gkey:
-        model_name = os.environ.get("CLOUD_MODEL", "gemini-3.1-flash-lite")
-    elif okey:
-        model_name = os.environ.get("OPENROUTER_MODEL", "openrouter/free")
-    else:
-        # If offline/local, dynamically fetch the specific GGUF filename
+    try:
+        import agent_cloud
+        configs = agent_cloud.get_active_configs([])
+        model_name = configs[0][2].get("model", "local-model") if configs else get_local_model_name()
+    except Exception:
         model_name = get_local_model_name()
 
-    box_width = 46
-    title_line = f" >< Fetch Agent ({version})" if version else ">_ Fetch Robotics"
-    model_line = f" model:     {model_name}"
-    dir_line   = f" directory: {display_dir}"
-    skill_line = f" skill:     {clean_name}" if clean_name else " skill:     default"
-    
-    mem_status = f"active ({tpm_count} facts, {db_turns} turns)" if memory_active else "disabled"
-    mem_line   = f" database:  {mem_status}" if is_agent else " database:  stateless"
-    
-    print("\033[1;36m╭" + "─" * box_width + "╮\033[0m")
-    print(f"\033[1;36m│\033[0m \033[1;37m{title_line:<{box_width-1}}\033[0m\033[1;36m│\033[0m")
-    print(f"\033[1;36m│\033[0m{' ':<{box_width}}\033[1;36m│\033[0m")
-    print(f"\033[1;36m│\033[0m \033[2m{model_line:<{box_width-1}}\033[0m\033[1;36m│\033[0m")
-    print(f"\033[1;36m│\033[0m \033[2m{dir_line:<{box_width-1}}\033[0m\033[1;36m│\033[0m")
-    print(f"\033[1;36m│\033[0m \033[2m{skill_line:<{box_width-1}}\033[0m\033[1;36m│\033[0m")
-    print(f"\033[1;36m│\033[0m \033[2m{mem_line:<{box_width-1}}\033[0m\033[1;36m│\033[0m")
-    print("\033[1;36m╰" + "─" * box_width + "╯\033[0m")
-    
-    approx_tokens = len(active_system_prompt) // 4
-    print(f"\033[2m[sys] Startup context: {approx_tokens:,} tokens | Ctrl+C to exit.\033[0m\n")
+    table = Table(show_header=False, box=None, padding=(0, 2, 0, 0))
+    table.add_column("Key", style="dim cyan", justify="right")
+    table.add_column("Value", style="green")
+
+    m_style = "bold red" if ("not loaded" in model_name or "offline" in model_name) else "green"
+    table.add_row("model:", Text(model_name, style=m_style))
+    table.add_row("directory:", display_dir)
+    table.add_row("profile:", clean_name or "chat")
+
+    if is_agent:
+        try:
+            import agent_core as core
+            use_map = bool(core.get_state("use_map", False)) or os.environ.get("AI_USE_MAP") == "1"
+        except Exception:
+            use_map = os.environ.get("AI_USE_MAP") == "1"
+
+        if memory_active and use_map:
+            db_status = f"active (map + mem: {mem_count}m/{db_turns}t)"
+        elif use_map:
+            db_status = "active (codebase map)"
+        elif memory_active:
+            db_status = f"active ({mem_count} memories, {db_turns} turns)"
+        else:
+            db_status = "stateless"
+    else:
+        db_status = "stateless"
+
+    table.add_row("database:", db_status)
+
+    if box_style == 8:
+        title_str = f"  Py Agent [sub-agent #{sub_id}]" if sub_id else "  Py Agent"
+        max_val_len = max(len(model_name), len(display_dir), len(clean_name or "chat"), len(db_status), 16)
+        sep_str = " " + "─" * (10 + 2 + max_val_len)
+        panel = Panel(
+            Group(Text(title_str, style="bold bright_green"), Text(sep_str, style="dim green"), table),
+            border_style="green",
+            box=ROUNDED,
+            expand=False,
+            subtitle="[dim]Ctrl+C to exit[/dim]",
+            subtitle_align="right",
+        )
+    else:
+        base_title, box_type, border_col, title_style = STYLES.get(box_style, STYLES[1])
+        title_text = f" {base_title} [sub-agent #{sub_id}] " if sub_id else f" {base_title} "
+        panel = Panel(
+            table,
+            title=Text(title_text, style=title_style),
+            title_align="left",
+            border_style=border_col,
+            box=box_type,
+            expand=False,
+            subtitle="[dim]Ctrl+C to exit[/dim]",
+            subtitle_align="right",
+        )
+
+    _console.print(panel)
+    _console.print()
+    try:
+        sys.stderr.write("\033[?25h")
+        sys.stderr.flush()
+    except OSError:
+        pass
 
 
 def confirm_tool(tool: str) -> bool:
-    """Prompt user to authorize executing a dynamic tool, defaulting to Yes on Enter."""
-    sys.stderr.write(f"\033[1;33m[sys] Authorize tool: {tool}? [Y/n]: \033[0m")
-    sys.stderr.flush()
+    target = getattr(sys, "__stderr__", None) or sys.stderr
+    target.write(f"\r\x1b[2K\r\033[1;33m[sys] Authorize tool:\033[0m \033[36m{tool}\033[0m \033[1;33m? [y/N]: \033[0m")
+    target.flush()
     try:
         char = get_key()
     except Exception:
         char = ""
-    is_yes = char.lower() == 'y' or char in ('\r', '\n', '')
-    if char in ('\r', '\n', ''):
-        sys.stderr.write("y\n")
-    elif char.startswith('\x1b') or char == '\x03':
-        sys.stderr.write("n\n")
-    else:
-        sys.stderr.write(f"{char}\n")
-    sys.stderr.flush()
+    is_yes = char.strip().lower() in ("y", "yes")
+    target.write("y\n" if is_yes else "n\n")
+    target.flush()
     return is_yes
 
 
 def run_interactive_selection(
     intent: str,
-    jaccard_search_fn: Callable[[str], Optional[str]],
+    jaccard_search_fn: Callable[[str], str | None],
     clean_tool_prefix_fn: Callable[[str], str],
     print_stock_error_fn: Callable[[str], None],
-    ensure_mysys_exists_fn: Callable[[], None]
+    ensure_mysys_exists_fn: Callable[[], None],
 ) -> None:
-    """Displays a menu overlay allowing arrow-selection and execution of mapped tools."""
-    if re.search(r'[\[\]{}()=\'"",;|<>#]', intent):
-        print_stock_error_fn(intent)
-        sys.exit(127)
-
-    matched_base = jaccard_search_fn(intent)
-    if not matched_base:
+    if RE_UNSAFE_SHELL_CHARS.search(intent) or not (matched_base := jaccard_search_fn(intent)):
         print_stock_error_fn(intent)
         sys.exit(127)
 
     options = matched_base.split("\n")
-    num_opts = len(options)
-    current_idx = 0
-    
+    num_opts, current_idx = len(options), 0
     sys.stderr.write("\033[?25l")
     sys.stderr.flush()
 
@@ -218,60 +486,358 @@ def run_interactive_selection(
             current_cmd = clean_tool_prefix_fn(current_cmd)
             is_danger = current_cmd.startswith("DANGER_FLAGGED:")
             cmd_to_show = current_cmd.replace("DANGER_FLAGGED:", "")
-            display_cmd = cmd_to_show.replace(" >/dev/null 2>&1", "").replace(os.path.expanduser("~"), "~")
-            
-            if "/.config/fetch/projects/" in display_cmd:
-                display_cmd = display_cmd.replace("/.config/fetch/projects/", "/")
+            display_cmd = (
+                cmd_to_show.replace(" >/dev/null 2>&1", "")
+                .replace(os.path.expanduser("~"), "~")
+                .replace("/.config/fetch/projects/", "/")
+            )
 
             idx_str = f"{current_idx + 1:02d}/{num_opts:02d}"
-            
-            if is_danger:
-                sys.stderr.write(
-                    f"\r\x1b[K\033[1;31m▲ WARNING: Destructive payload detected\033[0m\n"
-                    f"\r\x1b[K\033[1;31m[{idx_str}]\033[0m ❯ \x1b[1;36m[{current_intent}]\x1b[0m {display_cmd}\n"
-                    f"\r\x1b[K\033[2m::\033[0m execute payload? [y/N]: "
-                )
-            else:
-                sys.stderr.write(
-                    f"\r\x1b[K\033[1;32m[{idx_str}]\033[0m ❯ \x1b[1;36m[{current_intent}]\x1b[0m {display_cmd}\n"
-                    f"\r\x1b[K\033[2m::\033[0m ↵ run  Esc: "
-                )
+            prompt = (
+                f"\r\x1b[2K\033[1;31mWARNING: Destructive payload detected\033[0m\n\r\x1b[2K\033[1;31m[{idx_str}]\033[0m > \x1b[1;36m[{current_intent}]\x1b[0m {display_cmd}\n\r\x1b[2K\033[2m::\033[0m execute payload? [y/N]: "
+                if is_danger
+                else f"\r\x1b[2K\033[1;32m[{idx_str}]\033[0m > \x1b[1;36m[{current_intent}]\x1b[0m {display_cmd}\n\r\x1b[2K\033[2m::\033[0m enter to run, Esc to cancel: "
+            )
+            sys.stderr.write(prompt)
             sys.stderr.flush()
-            
+
             key = get_key()
-            if key in ('\x03', '\x1b') or (not is_danger and key not in ('\r', '', '\x1b[A', '\x1b[B')):
-                sys.stderr.write("\r\x1b[K\x1b[1A\r\x1b[KCancelled.\n")
+
+            if key in ("\x1b[A", "\x1b[B"):
+                current_idx = (current_idx + (1 if key == "\x1b[B" else -1) + num_opts) % num_opts
+                sys.stderr.write("\r\x1b[2K\x1b[1A\r\x1b[2K")
                 sys.stderr.flush()
-                break
+                continue
 
             if is_danger:
-                sys.stderr.write("\r\x1b[K\x1b[1A\r\x1b[K\x1b[1A\r\x1b[K")
+                sys.stderr.write("\r\x1b[2K\x1b[1A\r\x1b[2K\x1b[1A\r\x1b[2K")
                 sys.stderr.flush()
-                if key.lower() == 'y':
+                if key.lower() == "y":
                     if "system" in cmd_to_show:
                         ensure_mysys_exists_fn()
                     sys.stdout.write(cmd_to_show)
-                else:
-                    sys.stderr.write("Aborted safely.\n")
-                sys.stdout.flush()
-                break
+                    sys.stdout.flush()
+                    sys.exit(0)
+                sys.exit(127)
 
-            if key in ('\r', ''):
+            if key in ("\r", "", "y", "Y"):
                 sys.stderr.write("\n")
                 sys.stderr.flush()
                 if "system" in cmd_to_show:
                     ensure_mysys_exists_fn()
                 sys.stdout.write(cmd_to_show)
                 sys.stdout.flush()
-                break
-            elif key in ('\x1b[A', '\x1b[B'):
-                current_idx = (current_idx + (1 if key == '\x1b[B' else -1) + num_opts) % num_opts
-                sys.stderr.write("\r\x1b[K\x1b[1A\r\x1b[K")
-        sys.exit(0)
-    except KeyboardInterrupt:
-        sys.stderr.write("\r\x1b[K\x1b[1A\r\x1b[KCancelled.\n")
+                sys.exit(0)
+
+            sys.stderr.write("\r\x1b[2K\x1b[1A\r\x1b[2K")
+            sys.stderr.flush()
+            sys.exit(127)
+    finally:
+        sys.stderr.write("\033[?25h")
         sys.stderr.flush()
-        sys.exit(130)
+
+
+def show_help() -> None:
+    header = Text.assemble(
+        ("  Shortcuts: ", "dim"),
+        ("Esc", "bold yellow"),
+        (": bypass  |  ", "dim"),
+        ("Ctrl+C", "bold yellow"),
+        (": cancel  |  ", "dim"),
+        ("q / exit", "bold yellow"),
+        (": quit", "dim"),
+    )
+
+    cmd_table = Table(show_header=False, box=None, padding=(0, 1))
+    cmd_table.add_column("Command", style="bold cyan", justify="left", no_wrap=True)
+    cmd_table.add_column("Description", style="white")
+
+    cmds = [
+        ("/h", "Help menu"),
+        ("/pyc, /pyc web", "PyCode IDE (Desktop / Web)"),
+        ("/webui, /web", "WebUI gateway (llama.cpp)"),
+        ("/tui", "Terminal UI (PyTUI)"),
+        ("/calm, /zen", "Toggle silent Calm mode (boat indicator)"),
+        ("/v \\[auto], /voice", "Voice to text"),
+        ("/tts", "Text to speech (Kokoro)"),
+        ("/adp", "Toggle self-healing adapters"),
+        ("/py \\[code]", "IPython kernel execution"),
+        ("/m, /map", "Toggle Codebase index-map"),
+        ("/mem \\[save|list]", "Toggle & manage OKF memory files"),
+        ("/hs, /hindsight", "Retrospective session memory audit"),
+        ("/box \\[1-8]", "Box style preset"),
+        ("/task \\[goal]", "Autonomous task loop"),
+        ("/t \\[N|show|hide]", "Reasoning budget & display"),
+        ("/g, /yolo", "Toggle confirmation gates (YOLO)"),
+        ("/md", "Toggle Markdown stream"),
+        ("/stats", "Generation speed stats"),
+        ("/com, /compact", "3-Zone context compaction"),
+        ("/tok", "Context token usage"),
+        ("/sync", "Sync codebase index-map"),
+        ("/clear, /c", "Soft clear active chat history"),
+        ("/reset, /r", "Hard reset (.agent & database purge)"),
+        ("/s <query|off>", "Load or unload skill"),
+        ("-save <tag>", "Save checkpoint"),
+        ("-load", "Restore checkpoint"),
+        ("/gnd \\[budget|on|off]", "Search grounding (Gemini/DDG)"),
+        ("/f, /tk, /b, /a", "Follow-up, Think, Brainstorm, All"),
+        ("file <path>", "Load file into context"),
+        ("exit, quit, q", "Exit"),
+    ]
+
+    for cmd, desc in cmds:
+        cmd_table.add_row(cmd, f"[dim]-[/dim] {desc}")
+
+    _console.print(
+        "\n",
+        Panel(
+            Group(header, Text(""), Text("  Commands:", style="bold yellow"), cmd_table),
+            title=" Help & Commands ",
+            title_align="left",
+            border_style="bright_blue",
+            box=ROUNDED,
+            expand=False,
+        ),
+        "\n",
+    )
+
+
+def select_workspace_profile(workspace_name: str) -> tuple[str, bool, bool, bool, bool, bool]:
+    """Renders consolidated profile selector with automatic frontmatter pre-cache and 2-line layout."""
+    import agent_skills as skills
+
+    custom_dir = os.path.join(CFG_DIR, "skills", "profiles", "custom")
+    custom_opts = []
+
+    if os.path.isdir(custom_dir):
+        for fname in sorted(os.listdir(custom_dir)):
+            if fname.endswith(".md") and not fname.endswith(("-py.md", "-map.md")):
+                base_name = os.path.splitext(fname)[0]
+                lbl = f"Custom {base_name.title()}" if base_name.lower() != "custom" else "Custom"
+                custom_opts.append((f"custom/{base_name}", lbl, "~200t", None))
+
+    if custom_opts:
+        custom_opts[0] = (custom_opts[0][0], custom_opts[0][1], custom_opts[0][2], "Custom")
+
+    standard_agents = [
+        ("pi/pro",     "Pi Pro",     "~180t", "Agents"),
+        ("claude/pro", "Claude Pro", "~190t", None),
+        ("hermes/pro", "Hermes Pro", "~180t", None),
+    ]
+
+    options = custom_opts + standard_agents
+
+    profile_cache = {}
+    resolved_options = []
+    for k, lbl, fallback_d, cat in options:
+        sf = skills.find_skill_file(os.path.join(CFG_DIR, "skills"), k)
+        defaults = {"yolo": False, "map": False, "py": False, "mem": False, "adp": False}
+        tok_lbl = fallback_d
+        if sf and os.path.isfile(sf):
+            try:
+                with open(sf, "r", encoding="utf-8") as f:
+                    raw_content = f.read()
+                meta, body = skills.parse_frontmatter(raw_content)
+                tok_count = max(1, (len(body or raw_content) * 10) // 36)
+                tok_lbl = f"~{tok_count / 1000:.1f}kt" if tok_count >= 1000 else f"~{tok_count}t"
+                defaults["yolo"] = str(meta.get("yolo", "")).lower() in ("true", "1", "yes", "on")
+                defaults["map"] = str(meta.get("map", meta.get("use_map", ""))).lower() in ("true", "1", "yes", "on")
+                defaults["py"] = str(meta.get("ipython", meta.get("py", ""))).lower() in ("true", "1", "yes", "on")
+                defaults["mem"] = str(meta.get("memory", meta.get("mem", ""))).lower() in ("true", "1", "yes", "on")
+                defaults["adp"] = str(meta.get("adapters", meta.get("adp", meta.get("adapter", "")))).lower() in ("true", "1", "yes", "on")
+            except Exception:
+                pass
+        profile_cache[k] = defaults
+        resolved_options.append((k, lbl, tok_lbl, cat))
+    options = resolved_options
+
+    sys.stderr.write(f"\n\033[1;36m[ai init]\033[0m Select default Agent Profile for workspace \033[1;33m{workspace_name}\033[0m:\n\n\033[?25l")
+    sys.stderr.flush()
+
+    current_idx, num_opts = 0, len(options)
+    user_overrides = set()
+
+    ws_path = os.environ.get("AI_WORKSPACE_PATH", os.path.join(CFG_DIR, "projects", workspace_name))
+    if not os.path.isdir(ws_path):
+        ws_path = os.getcwd()
+
+    map_toks = 350
+    for cand in [
+        os.path.join(ws_path, ".agent", f"index-map-{workspace_name}.txt"),
+        os.path.join(ws_path, f"index-map-{workspace_name}.txt"),
+    ]:
+        if os.path.isfile(cand):
+            try:
+                map_toks = max(50, (os.path.getsize(cand) * 10) // 36)
+                break
+            except OSError:
+                pass
+
+    mem_toks = 0
+    mem_dir = os.path.join(ws_path, ".agent", "memory")
+    if os.path.isdir(mem_dir):
+        try:
+            mem_toks = sum(
+                (os.path.getsize(os.path.join(mem_dir, f)) * 10) // 36
+                for f in os.listdir(mem_dir)
+                if f.endswith(".md")
+            )
+        except OSError:
+            pass
+    if mem_toks == 0:
+        mem_toks = 40
+    init_meta = profile_cache.get(options[0][0], {})
+    is_yolo = init_meta.get("yolo", False)
+    use_map = init_meta.get("map", False)
+    is_py = init_meta.get("py", False)
+    is_mem = init_meta.get("mem", False)
+    is_adp = init_meta.get("adp", False)
+    last_rendered_lines = 0
+
+    try:
+        while True:
+            if last_rendered_lines > 0:
+                sys.stderr.write(f"\033[{last_rendered_lines}A\r\033[J")
+
+            cur_key = options[current_idx][0]
+            cur_meta = profile_cache.get(cur_key, {})
+            if "yolo" not in user_overrides:
+                is_yolo = cur_meta.get("yolo", False)
+            if "map" not in user_overrides:
+                use_map = cur_meta.get("map", False)
+            if "py" not in user_overrides:
+                is_py = cur_meta.get("py", False)
+            if "mem" not in user_overrides:
+                is_mem = cur_meta.get("mem", False)
+            if "adp" not in user_overrides:
+                is_adp = cur_meta.get("adp", False)
+
+            lines_count = 0
+            sub_idx = 1
+            for idx, (k, lbl, d, cat) in enumerate(options):
+                if cat:
+                    sub_idx = 1
+                    if idx > 0:
+                        sys.stderr.write("\r\x1b[K\n")
+                        lines_count += 1
+                    dashes = "─" * max(5, 30 - len(cat))
+                    sys.stderr.write(f"\r\x1b[K\033[1;36m  ─── {cat} {dashes}\033[0m\n")
+                    lines_count += 1
+
+                if idx == current_idx:
+                    sys.stderr.write(f"\r\x1b[K\033[1;32m  > {sub_idx:2d}. {lbl:<20}\033[0m \033[1;36m({d})\033[0m\n")
+                else:
+                    sys.stderr.write(f"\r\x1b[K\033[37m    {sub_idx:2d}. {lbl:<20}\033[0m \033[2m({d})\033[0m\n")
+                lines_count += 1
+                sub_idx += 1
+
+            b_on = "\033[1;36m[ON]\033[0m"
+            b_off = "\033[37m[OFF]\033[0m"
+            yolo_badge = b_on if is_yolo else b_off
+            map_badge  = b_on if use_map  else b_off
+            mem_badge  = b_on if is_mem   else b_off
+            py_badge   = b_on if is_py    else b_off
+            adp_active = is_adp if "is_adp" in locals() else (adapters_active if "adapters_active" in locals() else False)
+            adp_badge  = b_on if adp_active else b_off
+
+            if is_py:
+                tool_label = "python + native (7 tools, ~760t)"
+            elif use_map:
+                tool_label = "index-map (11 tools, ~1.1kt)"
+            else:
+                tool_label = "native json (6 tools, ~680t)"
+
+            addons = []
+            if use_map:
+                m_str = f"~{map_toks}t" if map_toks < 1000 else f"~{map_toks/1000:.1f}kt"
+                addons.append(f"+Map: {m_str}")
+            if is_mem:
+                mem_str = f"~{mem_toks}t" if mem_toks < 1000 else f"~{mem_toks/1000:.1f}kt"
+                addons.append(f"+Mem: {mem_str}")
+
+            addon_info = f"  \033[90m[{' | '.join(addons)}]\033[0m" if addons else ""
+            tools_desc = f"\033[1;36m{tool_label:<29}\033[0m{addon_info}"
+
+            bottom_text = (
+                f"\r\x1b[K\n\r\x1b[K    \033[2mTools:\033[0m {tools_desc}\n"
+                f"\r\x1b[K\n\r\x1b[K  \033[2m::\033[0m "
+                f"\033[1;37mEnter\033[0m \033[37mselect\033[0m    "
+                f"\033[1;37mUp/Down\033[0m \033[37mnavigate\033[0m    "
+                f"\033[1;37mEsc:\033[0m \033[37mdefault\033[0m\n"
+                f"\r\x1b[K     "
+                f"\033[37mTab: YOLO\033[0m {yolo_badge}    "
+                f"\033[37mm: Map\033[0m {map_badge}    "
+                f"\033[37md: Mem\033[0m {mem_badge}    "
+                f"\033[37mp: Py\033[0m {py_badge}    "
+                f"\033[37ma: Adp\033[0m {adp_badge}"
+            )
+            sys.stderr.write(bottom_text)
+            lines_count += bottom_text.count("\n")
+            sys.stderr.flush()
+
+            last_rendered_lines = lines_count
+
+            char = get_key()
+            if char in ("\t", "y", "Y"):
+                is_yolo = not is_yolo
+                user_overrides.add("yolo")
+            elif char == "m":
+                use_map = not use_map
+                user_overrides.add("map")
+            elif char in ("d", "D", "M"):
+                is_mem = not is_mem
+                user_overrides.add("mem")
+            elif char in ("p", "P"):
+                is_py = not is_py
+                user_overrides.add("py")
+            elif char in ("a", "A"):
+                is_adp = not is_adp
+                user_overrides.add("adp")
+            elif char in ("\x03", "\x1b"):
+                key, label = options[0][0], options[0][1]
+                badge_col = "\033[1;36m"
+                b_yolo = f" {badge_col}[Yolo: ON]\033[0m" if is_yolo else ""
+                b_map  = f" {badge_col}[Map: ON]\033[0m" if use_map else ""
+                b_mem  = f" {badge_col}[Mem: ON]\033[0m" if is_mem else ""
+                b_py   = f" {badge_col}[Py: ON]\033[0m" if is_py else ""
+                b_adp  = f" {badge_col}[Adp: ON]\033[0m" if is_adp else ""
+                sys.stderr.write(f"\x1b[{last_rendered_lines + 3}A\r\x1b[J\033[1;32mOK: Profile set to:\033[0m \033[1m{label}\033[0m{b_yolo}{b_map}{b_mem}{b_py}{b_adp}\n\n")
+                sys.stderr.flush()
+                return key, is_yolo, use_map, is_py, is_mem, is_adp
+            elif char in ("\r", "\n", ""):
+                key, label = options[current_idx][0], options[current_idx][1]
+                sys.stderr.write(f"\x1b[{last_rendered_lines + 3}A\r\x1b[J")
+                if not is_yolo:
+                    sys.stderr.write(f"\033[1;36mEnable Autonomous YOLO mode for {label}? [y/N] \033[2m(Esc/Left: back)\033[0m: \033[0m")
+                    sys.stderr.flush()
+                    raw_c = get_key()
+                    c = raw_c.lower()
+
+                    if raw_c in ("\x1b", "\x1b[D", "\x7f", "\x08", "\x1b[A", "\x1b[B") or c in ("b", "back"):
+                        sys.stderr.write("\r\x1b[2K")
+                        sys.stderr.write(
+                            f"\n\033[1;36m[ai init]\033[0m Select default Agent Profile for workspace \033[1;33m{workspace_name}\033[0m:\n\n"
+                        )
+                        sys.stderr.flush()
+                        last_rendered_lines = 0
+                        continue
+
+                    sys.stderr.write("y\n" if c == "y" else "n\n")
+                    sys.stderr.flush()
+                    if c == "y":
+                        is_yolo = True
+                    sys.stderr.write("\x1b[1A\r\x1b[2K")
+                badge_col = "\033[1;36m"
+                b_yolo = f" {badge_col}[Yolo: ON]\033[0m" if is_yolo else ""
+                b_map  = f" {badge_col}[Map: ON]\033[0m" if use_map else ""
+                b_mem  = f" {badge_col}[Mem: ON]\033[0m" if is_mem else ""
+                b_py   = f" {badge_col}[Py: ON]\033[0m" if is_py else ""
+                b_adp  = f" {badge_col}[Adp: ON]\033[0m" if is_adp else ""
+                sys.stderr.write(f"\033[1;32mOK: Profile set to:\033[0m \033[1m{label}\033[0m{b_yolo}{b_map}{b_mem}{b_py}{b_adp}\n\n")
+                sys.stderr.flush()
+                return key, is_yolo, use_map, is_py, is_mem, is_adp
+            elif char in ("\x1b[A", "\x1b[B"):
+                current_idx = (current_idx + (1 if char == "\x1b[B" else -1) + num_opts) % num_opts
     finally:
         sys.stderr.write("\033[?25h")
         sys.stderr.flush()
