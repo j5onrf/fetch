@@ -9,7 +9,10 @@
   </table>
 </div>
 
-```console
+<div align="center">
+  <table width="600">
+    <tr>
+      <td><pre style="margin: 0; background: transparent; border: none; font-family: monospace; white-space: pre;">
                           User Query
                               │
                               ▼
@@ -26,11 +29,17 @@
    ┌──────────────────────┐          ┌─────────────────┐
    │    Cactus Needle 3   │          │  Local SLM /    │
    │ (Extract JSON Args)  │          │  Cloud Model    │
-   └──────────┬───────────┘          └─────────────────┘
+   └──────────┬───────────┘          └─────────────────┘    
               │
               ▼
-      Execute Local Tool
-```
+      Execute Local Tool</pre></td>
+    </tr>
+  </table>
+</div>
+<br>
+
+---
+
 
 <div align="center">
   <p>
@@ -314,3 +323,4 @@ AI_MAX_TOKENS="8192"
 * **<a href="projects/Readme.md">Workspace Manual</a>**
 * **<a href="modules/Readme.md">System Architecture</a>**
 * Licensed under the permissive **[MODIFIED MIT LICENSE](LICENSE)**
+
